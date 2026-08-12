@@ -538,6 +538,16 @@ ExtraTrees가 두 폴드 다 압도적 1위, 블렌드도 전부 ExtraTrees 단�
 타겟에는 과적합하기 쉽고, 배깅 계열이 더 강건함 — 그중에서도 분할점까지 무작위화하는 ExtraTrees가
 RandomForest보다도 나음.
 
+**capacity/shrink 튜닝**(`segment_corrector_tuning.py`): depth/n_estimators/min_samples_leaf 6개 조합
+스윕 — 지금 기본값(depth=10, n=100, leaf=200)이 이미 최선급, 다른 조합들은 두 폴드 동시에 이기지
+못함(예: depth=14는 stress +7.59지만 primary -2.59) → **capacity는 그대로 유지**.
+
+shrink(보정 강도, 지금은 1.0=100%) 스윕에서는 뚜렷한 트레이드오프 발견: shrink=0.85는 primary
+806.41(최고)이지만 stress 710.64(-44.99), shrink=1.15는 stress 777.02(최고)지만 primary 792.30(-9.63).
+**두 폴드를 동시에 이기는 shrink 없음 — E007(V14 shrink 튜닝이 local엔 좋았지만 실제 LB에서 역효과)의
+교훈을 그대로 적용해 한쪽 폴드에 치우친 값을 고르지 않고 shrink=1.0(무보정) 유지.** stress 폴드가
+"예상 못한 regime 변화 대응력"의 대리지표라 거길 희생하는 선택은 하지 않음.
+
 제출 패키지: `submit_segment_residual_corrector/submit.zip` — champion `.cbm` 그대로 재사용 +
 `build_correctors.py`가 오프라인으로 학습한 corrector(segment 3개×seed 3개=9개 ExtraTrees + 고정
 카테고리 인코딩 맵)를 `model/correctors.joblib`로 저장, `script.py`가 test.csv에 적용. 로컬 test.csv

@@ -1,0 +1,40 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+base BSS: 734.49
+--- capacity 스윕 (shrink=1.0 고정) ---
+  {'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 200, 'max_features': 0.7}: 801.93 (gain +67.43)
+  {'n_estimators': 100, 'max_depth': 6, 'min_samples_leaf': 200, 'max_features': 0.7}: 799.07 (gain +64.57)
+  {'n_estimators': 100, 'max_depth': 14, 'min_samples_leaf': 200, 'max_features': 0.7}: 799.34 (gain +64.84)
+  {'n_estimators': 200, 'max_depth': 10, 'min_samples_leaf': 200, 'max_features': 0.7}: 800.25 (gain +65.76)
+  {'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 50, 'max_features': 0.7}: 791.86 (gain +57.36)
+  {'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 500, 'max_features': 0.7}: 795.43 (gain +60.94)
+--- shrink 스윕 (기본 capacity의 correction 재사용) ---
+  shrink=0.5: 796.83 (gain +62.33)
+  shrink=0.7: 805.74 (gain +71.24)
+  shrink=0.85: 806.41 (gain +71.91)
+  shrink=1.0: 801.93 (gain +67.43)
+  shrink=1.15: 792.30 (gain +57.80)
+  shrink=1.3: 777.52 (gain +43.02)
+  shrink=1.5: 749.80 (gain +15.30)
+
+===== STRESS: <2023 -> 2023 =====
+base BSS: 10.25
+--- capacity 스윕 (shrink=1.0 고정) ---
+  {'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 200, 'max_features': 0.7}: 755.63 (gain +745.38)
+  {'n_estimators': 100, 'max_depth': 6, 'min_samples_leaf': 200, 'max_features': 0.7}: 722.22 (gain +711.98)
+  {'n_estimators': 100, 'max_depth': 14, 'min_samples_leaf': 200, 'max_features': 0.7}: 763.22 (gain +752.97)
+  {'n_estimators': 200, 'max_depth': 10, 'min_samples_leaf': 200, 'max_features': 0.7}: 761.13 (gain +750.88)
+  {'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 50, 'max_features': 0.7}: 745.27 (gain +735.03)
+  {'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 500, 'max_features': 0.7}: 745.76 (gain +735.51)
+--- shrink 스윕 (기본 capacity의 correction 재사용) ---
+  shrink=0.5: 513.97 (gain +503.72)
+  shrink=0.7: 642.08 (gain +631.83)
+  shrink=0.85: 710.64 (gain +700.39)
+  shrink=1.0: 755.63 (gain +745.38)
+  shrink=1.15: 777.02 (gain +766.78)
+  shrink=1.3: 774.84 (gain +764.59)
+  shrink=1.5: 735.23 (gain +724.98)
+
+요약 (base, capacity_results, shrink_results):
+2023->2024: (np.float64(734.494427358634), [({'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 200, 'max_features': 0.7}, np.float64(801.9291560629526)), ({'n_estimators': 100, 'max_depth': 6, 'min_samples_leaf': 200, 'max_features': 0.7}, np.float64(799.0655734237406)), ({'n_estimators': 100, 'max_depth': 14, 'min_samples_leaf': 200, 'max_features': 0.7}, np.float64(799.3356398512063)), ({'n_estimators': 200, 'max_depth': 10, 'min_samples_leaf': 200, 'max_features': 0.7}, np.float64(800.2546526700849)), ({'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 50, 'max_features': 0.7}, np.float64(791.8557136930792)), ({'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 500, 'max_features': 0.7}, np.float64(795.4332405519682))], {0.5: np.float64(796.8282231184731), 0.7: np.float64(805.7365398341232), 0.85: np.float64(806.408326775232), 1.0: np.float64(801.9291560629526), 1.15: np.float64(792.2990276972963), 1.3: np.float64(777.517941678274), 1.5: np.float64(749.7972261920838)})
+2022->2023: (np.float64(10.249155014097067), [({'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 200, 'max_features': 0.7}, np.float64(755.6266020357527)), ({'n_estimators': 100, 'max_depth': 6, 'min_samples_leaf': 200, 'max_features': 0.7}, np.float64(722.2249402515257)), ({'n_estimators': 100, 'max_depth': 14, 'min_samples_leaf': 200, 'max_features': 0.7}, np.float64(763.2216422526428)), ({'n_estimators': 200, 'max_depth': 10, 'min_samples_leaf': 200, 'max_features': 0.7}, np.float64(761.1334091411903)), ({'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 50, 'max_features': 0.7}, np.float64(745.2745993257514)), ({'n_estimators': 100, 'max_depth': 10, 'min_samples_leaf': 500, 'max_features': 0.7}, np.float64(745.7622690596355))], {0.5: np.float64(513.9653787677112), 0.7: np.float64(642.0764681332125), 0.85: np.float64(710.6440101063316), 1.0: np.float64(755.6266020357527), 1.15: np.float64(777.0242439214869), 1.3: np.float64(774.836935763501), 1.5: np.float64(735.2328248181883)})
