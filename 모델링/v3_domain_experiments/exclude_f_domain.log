@@ -1,0 +1,22 @@
+game_type value_counts:
+ game_type
+R    1314088
+F     161004
+Name: count, dtype: int64
+
+===== A) baseline (R+F 같이 학습) -> R행만 평가 =====
+2022 {'n': 217024, 'r (실제 성공률)': np.float64(0.5037), 'brier': 0.248653, 'baseline_brier (r(1-r))': np.float64(0.249986), 'score (리더보드 산식)': np.float64(533.24), 'auc': 0.5426, 'calibration_slope': 1.1522, 'weight': 0.2, 'best_iteration': 100}
+2023 {'n': 219839, 'r (실제 성공률)': np.float64(0.5031), 'brier': 0.248779, 'baseline_brier (r(1-r))': np.float64(0.24999), 'score (리더보드 산식)': np.float64(484.7), 'auc': 0.5394, 'calibration_slope': 0.9939, 'weight': 0.3, 'best_iteration': 140}
+2024 {'n': 223497, 'r (실제 성공률)': np.float64(0.4897), 'brier': 0.248039, 'baseline_brier (r(1-r))': np.float64(0.249894), 'score (리더보드 산식)': np.float64(742.14), 'auc': 0.5488, 'calibration_slope': 1.0692, 'weight': 0.5, 'best_iteration': 205}
+weighted {'brier': 0.248384, 'score': np.float64(623.13)}
+
+===== B) F 제거 (R만 학습) -> R행만 평가 =====
+2022 {'n': 217024, 'r (실제 성공률)': np.float64(0.5037), 'brier': 0.24872, 'baseline_brier (r(1-r))': np.float64(0.249986), 'score (리더보드 산식)': np.float64(506.56), 'auc': 0.541, 'calibration_slope': 0.9907, 'weight': 0.2, 'best_iteration': 128}
+2023 {'n': 219839, 'r (실제 성공률)': np.float64(0.5031), 'brier': 0.248586, 'baseline_brier (r(1-r))': np.float64(0.24999), 'score (리더보드 산식)': np.float64(561.77), 'auc': 0.5428, 'calibration_slope': 1.1546, 'weight': 0.3, 'best_iteration': 71}
+2024 {'n': 223497, 'r (실제 성공률)': np.float64(0.4897), 'brier': 0.248331, 'baseline_brier (r(1-r))': np.float64(0.249894), 'score (리더보드 산식)': np.float64(625.68), 'auc': 0.545, 'calibration_slope': 1.1, 'weight': 0.5, 'best_iteration': 124}
+weighted {'brier': 0.248485, 'score': np.float64(582.68)}
+
+===== 비교 =====
+A (R+F 학습) weighted score: 623.13
+B (R only 학습) weighted score: 582.68
+차이 (B-A): -40.45

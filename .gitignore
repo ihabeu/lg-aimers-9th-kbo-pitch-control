@@ -10,3 +10,6 @@ data/trackman_history.csv
 # OS
 .DS_Store
 **/catboost_info/
+
+# 대용량 모델 아티팩트 (중단된 V14 계열 실험용, 재현 필요하면 build_artifacts.py/train.py 재실행)
+**/*.joblib
