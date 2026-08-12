@@ -1,0 +1,19 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+base BSS: 734.49
+  base R: 742.04
+  base F: 351.70
+corrected BSS (3-seed consensus): 790.33  gain: 55.83
+  corrected R: 785.08
+  corrected F: 503.56
+
+===== STRESS: <2023 -> 2023 =====
+base BSS: 10.25
+  base R: 70.74
+  base F: 0.00
+corrected BSS (3-seed consensus): 634.06  gain: 623.81
+  corrected R: 661.80
+  corrected F: 70.02
+
+요약: 2023->2024 (base, corrected) = (np.float64(734.494427358634), np.float64(790.3252326357913))  / 2022->2023 = (np.float64(10.249155014097067), np.float64(634.0561391655064))
+(비교: baseline 단일 2024 폴드 734.49)

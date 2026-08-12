@@ -471,15 +471,48 @@ confirmation(2024, 가중치 선택에 전혀 안 쓴 값): baseline 742.14 → 
 같은 패턴 — 패턴 자체는 실재해도 CatBoost가 `game_month`+`game_type`으로 이미 스스로 찾고 있어서 명시적
 피처는 중복 정보+노이즈로만 작용.
 
-### 종합
+### 실험 8 — monotone_constraints (`v3_domain_experiments/monotone_constraints.py`)
 
-이번 세션 신규 실험 7개 중 6개(R-only, F 레짐필터, 계층형 EB 단독, 레벨시프트 calibration,
-model_diversity 반복확인 성격의 실험 5, F 시즌내 온도차)는 primary 기준 기각, **실험 6(discovery/confirmation을 통과한
-baseline+EB 블렌드, +8.93)만 유일하게 방법론을 통과했지만 개선폭이 노이즈 바닥선 근처라 보류 상태.**
-기존 실험(위 로그 전체)까지 합치면 baseline(raw 44피처, 필터 없음, CatBoost, 2019~2024 전체 학습)을
-확실하게 넘은 시도는 여전히 없다. 세 개의 독립적 소스(우리 자체 실험, 다른참가자/aimers,
-다른참가자)가 같은 결론에 수렴했다: **이 44피처 안에서는 CatBoost + 전체 데이터가 사실상 실질적
-상한**이고, feature/data/calibration 조정으로는 크게 못 번다.
-**`submit/submit.zip`(789.23)을 유효한 최종안으로 유지**하고(V14 1032.00은 위 "V14 철회" 절 참고,
-유효하지 않음), 남은 시간은 monotone_constraints 정도만 저비용으로 한 번 더 확인해본 뒤 Phase 3
-대비로 넘어가는 걸 권장.
+방향이 명확한 피처(성공률 계열 +, ball_rate -)에 CatBoost monotone_constraints 적용.
+
+| | 2022 | 2023 | **2024(primary)** | 가중평균 |
+|---|---:|---:|---:|---:|
+| baseline | 2280.22 | 10.25 | **734.49** | 826.37 |
+| +monotone | 2232.33 | 10.32 | **679.91** | 789.52 |
+
+**기각.** primary -54.58.
+
+### 실험 9 — game_type(R/F) segment residual corrector (`v3_domain_experiments/segment_residual_corrector.py`) — ✅ 채택, 패키징 완료
+
+**이번 세션 신규 실험 중 유일하게 확실한 양의 결과.** champion CatBoost(789.23, 손대지 않음)를 base로
+그대로 두고, base의 오차(y - base예측)를 game_type(R/F) segment별로 ExtraTrees가 따로 학습해서 보정.
+V14의 일반적 발상(base+segment residual correction)만 참고했고 구체적 구현(segment 기준, 하이퍼파라미터)은
+전부 독립적으로 결정 — 예전에 실패했던 "R/F 완전 분리 모델"(623.31)과 달리 base 모델 자체는 전체
+데이터(R+F 같이)로 학습하기 때문에 표본이 줄어드는 손해가 없음.
+
+pitcher-disjoint cross-fit(3 seed) 검증, 2023→2024/2022→2023 두 폴드:
+
+| 폴드 | base | corrected | 개선 |
+|---|---:|---:|---:|
+| 2023→2024 (primary) | 734.49 | **790.33** | **+55.83** |
+| 2022→2023 (stress) | 10.25 | **634.06** | **+623.81** |
+
+두 폴드 다 크게, 같은 방향으로 개선. **채택.** 제출 패키지: `submit_segment_residual_corrector/submit.zip`
+— champion `.cbm` 그대로 재사용 + `build_correctors.py`가 오프라인으로 학습한 corrector(segment×seed
+6개 ExtraTrees + 고정 카테고리 인코딩 맵)를 `model/correctors.joblib`로 저장, `script.py`가 test.csv에
+적용. 로컬 test.csv 재현값 소수점까지 일치 확인, 245,789행 스트레스 테스트 약 2.3초(제한 10분).
+실제 LB 제출은 사용자 진행 예정.
+
+### 종합 (2026-08-12 업데이트: 실험 9로 결론 갱신)
+
+신규 실험 9개 중 7개(R-only, F 레짐필터, 계층형 EB 단독, 레벨시프트 calibration, model_diversity
+반복확인 성격의 실험 5, F 시즌내 온도차, monotone_constraints)는 primary 기준 기각, 실험 6(baseline+EB
+블렌드, +8.93)은 노이즈 바닥선 근처라 보류. **raw 44피처 자체를 건드리는 방향(피처 추가/제거/제약)은
+이 시점에서 사실상 소진됐다고 판단** — 세 개의 독립 소스(우리 자체 실험, 다른참가자/aimers,
+다른참가자)가 "이 44피처 안에서는 CatBoost+전체데이터가 실질적 상한"이라는 결론에 수렴했다.
+
+**다만 실험 9(champion + game_type segment residual corrector)로 이 상한을 실제로 넘었다.** 핵심은
+피처를 더 추가하는 게 아니라 **base 모델은 그대로 두고 그 오차를 segment별로 별도 학습해서 보정**하는
+구조 변경이었다 — "feature 조정으로는 못 번다"는 위 결론과 모순되지 않는다(feature가 아니라 2단계
+구조를 바꾼 것). **`submit_segment_residual_corrector/submit.zip`(로컬 primary 790.33, +55.83)이 다음
+제출 후보.** `submit/submit.zip`(789.23)은 그대로 안전망으로 유지.
