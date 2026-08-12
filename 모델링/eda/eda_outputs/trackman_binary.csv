@@ -1,0 +1,4 @@
+column,n_unique,missing_ratio,top_values(count)
+top_bottom,2,0.0,"Top=916993, Bottom=876085"
+pitcher_hand,2,0.0,"Right=1343118, Left=449960"
+batter_hand,2,0.0,"Right=967537, Left=825541"

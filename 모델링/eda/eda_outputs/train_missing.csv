@@ -1,0 +1,17 @@
+,missing_count,missing_ratio
+asof_pitcher_prev1_game_success_rate,29185,0.0198
+asof_pitcher_prev3_game_success_rate,29185,0.0198
+asof_pitcher_prev5_game_success_rate,29185,0.0198
+asof_pitcher_prev1_game_middle_rate,29185,0.0198
+asof_pitcher_prev3_game_middle_rate,29185,0.0198
+asof_pitcher_prev5_game_middle_rate,29185,0.0198
+asof_batter_success_rate,830,0.0006
+asof_batter_middle_rate,830,0.0006
+asof_pitcher_success_rate,792,0.0005
+asof_pitcher_reverse_rate,792,0.0005
+asof_pitcher_middle_rate,792,0.0005
+asof_pitcher_ball_rate,792,0.0005
+asof_pitcher_strike_rate,792,0.0005
+asof_pitcher_fastball_rate,792,0.0005
+asof_pitcher_breaking_rate,792,0.0005
+asof_pitcher_offspeed_rate,792,0.0005

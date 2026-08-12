@@ -1,0 +1,12 @@
+# 원본 대회 데이터 (용량 커서 제외: train.csv 351MB, trackman_history.csv 337MB)
+data/train.csv
+data/trackman_history.csv
+
+# 노트북/파이썬 캐시
+**/.ipynb_checkpoints/
+**/__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+**/catboost_info/

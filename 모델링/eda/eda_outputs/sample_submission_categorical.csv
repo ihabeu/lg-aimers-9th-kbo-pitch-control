@@ -1,0 +1,3 @@
+column,n_unique,missing,missing_ratio,top_values
+row_id,5,0,0.0,"TEST_000001=1, TEST_000017=1, TEST_000213=1, TEST_005332=1, TEST_035185=1"
+control_success,1,0,0.0,0.5=5
