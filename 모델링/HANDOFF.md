@@ -27,12 +27,32 @@ Phase2 수료 기준: Public LB 549.51 이상. 데이터 설명서는 [`data/dat
 | 5차 | CatBoost + matchup 3종 | 2019~2024 전체 | 711.05 (로컬 703.10과 거의 일치, baseline 789.23 미달로 폐기) |
 | 7차 | CatBoost + recent_k_pitch_rate(스냅샷 고정) | 2019~2024 전체 | **252.51** (로컬 966.18과 완전히 다른 방향 — 원인 규명 후 폐기, 아래 상세 참고) |
 | 6차 | CatBoost + hand_matchup | 2019~2024 전체 | **787.40** (로컬 rolling OOT는 baseline 대비 +18.40/+21.06으로 확실히 개선이었는데 실제 LB는 오히려 -1.83 낮음 — local/actual 재괴리 사례. 제출 파이프라인 자체는 검증 완료: 모델 feature 순서/cat_features가 script.py와 완전 일치, in-sample 2024 재현 시 score=879.78·예측확률 분포 정상·hand_matchup 카테고리 4종 정상 생성 → 파이프라인 버그 아니라 진짜 2025 일반화 문제로 판단) |
+| 8차 (2026-08-12) | V14(recent shared base + 3-domain residual adapter, v1.1 튜닝) | 2024 시즌(base) + 2024 라벨(residual adapter) — recent-shared-base 철학 | 1032.0064496443 — **🚫 철회함(아래 "V14 철회" 절 참고). 다른 참가자(다른참가자)의 실제 노트북을 그대로 재현한 것으로 확인돼 부정 제출 위험. 유효 champion 아님, 789.23이 유효한 최종 제출.** |
 
 **hand_matchup 최종 판정**: 제출 모델로는 채택 안 함(789.23 유지). 다만 "선수별 조건부 이력 정보"라는 가설 자체를 검증하려고 STEP 1(platoon feature) 4개를 독립적으로 테스트함 — A: pitcher_vs_current_batter_hand_rate 724.39(-10.10), B: batter_vs_current_pitcher_hand_rate 678.90(-55.59), C: pitcher_platoon_advantage 734.33(-0.16), D: batter_platoon_advantage 703.55(-30.94). 전부 baseline 미달로 **platoon 방향도 종료**. hand_matchup의 로컬 개선이 실제 LB로 이어지지 않은 것과 별개로, platoon 자체도 로컬에서부터 신호가 없었음(코드: [`platoon_features.py`](modeling/platoon_features.py), [`platoon_ablation.py`](modeling/platoon_ablation.py)).
 
 **⚠️ 반복된 함정**: 최종 제출 모델은 반드시 2019~2024 **전체**로 재학습해야 한다. 검증(2019~2023 학습→2024 검증)에서 찾은 하이퍼파라미터/라운드수는 유지하되, 실제 제출 아티팩트는 전체 데이터로 다시 학습해야 함. CatBoost에서 한 번, NN에서 또 한 번 이 실수를 반복함 — 새 모델 만들 때마다 반드시 확인할 것.
 
-## 현재 최선 모델 (제출 완료, 789.23)
+## 🚫 2026-08-12 V14(1032.00) 철회 — 부정 제출 위험으로 champion 자격 박탈
+
+`submit_v14_domain_residual/`(V14 recent-shared-base + 3-domain residual adapter, v1.1 튜닝)이 실제
+LB **1032.0064496443**을 받아 한때 champion으로 기록됐으나, **이 문서 저장 시점에 철회한다.**
+
+**철회 사유**: `submit_v14_domain_residual/README.md`에 "다른참가자의 ChatGPT 개발 로그에서 받은
+`kaggle_kbo_v14_recent_shared_domain_residual_extratrees.ipynb`를 우리 데이터에 **그대로 재현**"이라고
+명시돼 있음을 확인함. 다른참가자는 **같은 대회(LG Aimers 9기, DACON 236743)의 다른 참가자**이고(참고하는
+대회 규정 문서가 우리와 완전히 동일), 그 사람이 자신의 ChatGPT 대화(비공개성 강한 공유 링크)에서 만든 실제
+노트북을 그대로 가져다 데이터 경로/하이퍼파라미터만 바꾼 것으로 확인됨(`v14_common.py`의 압축된 코드
+스타일·`raw_bss()` 함수명이 다른참가자 원본 코드와 사실상 동일 — 우리 프로젝트의 나머지 코드 스타일과
+뚜렷이 다름). DACON 부정 제출 공지(https://dacon.io/notice/notice/13)의 "다른 참가자들과 형평성에
+어긋나는 (의도적인) 참가 방식" 조항에 해당할 위험이 있고, 특히 검증이 "잠재적 수상 후보군"에 집중된다는
+점에서 고득점일수록 위험이 커지는 구조.
+
+**조치**: `submit/submit.zip`(789.23, 완전히 독립적으로 개발)을 유효한 최종 제출로 되돌림. 사용자가
+운영진 문의 및 재제출 여부를 진행 중. **`submit_v14_domain_residual/`은 참고용으로만 보존하고 이후
+어떤 실험의 기준선으로도 쓰지 않는다.**
+
+## 현재 최선 모델 (제출 완료, 789.23) — 유효한 champion
 
 - 위치: [`modeling/baseline_catboost.py`](modeling/baseline_catboost.py) + [`modeling/baseline_catboost.ipynb`](modeling/baseline_catboost.ipynb)
 - 레시피: CatBoost, raw 44피처(전처리 없음, 결측치 네이티브 처리), `depth=6, learning_rate=0.05, l2_leaf_reg=15`, iterations는 2019-23→24 검증에서 찾은 값(204)으로 2019~2024 전체 재학습
@@ -398,12 +418,47 @@ hand_matchup 때와 같은 "로컬 폴드 부호가 갈리면 못 믿는다" 원
 과대보정. CatBoost가 `season`을 피처로 이미 갖고 있어서 드리프트를 어느 정도 스스로 따라가고 있었는데
 거기에 수동으로 더 얹으니 오히려 어긋났다 — F 케이스와 같은 이야기(모델이 이미 하는 걸 사람이 손대면 손해).
 
+### 실험 5 — baseline × 계층형EB residual 상관 (`modeling/residual_correlation_eb.py`)
+
+V14의 "base 블렌드 + residual adapter" 2층 구조를 흉내내기 전에, 애초에 피처 표현이 다른 두 모델(raw
+44피처 CatBoost vs +계층형 EB CatBoost)의 오차가 실제로 덜 겹치는지부터 확인. 기존 `model_diversity.py`는
+"같은 44피처, 다른 알고리즘"이었어서 이번엔 "다른 피처 표현, 같은 알고리즘(CatBoost)"으로 재검증.
+
+2024 단일 폴드: pred correlation 0.95428, **residual correlation 0.99969** — `model_diversity.py`의
+0.998보다도 높다. 피처 표현을 바꿔도 CatBoost가 찾는 오차 패턴은 사실상 동일. 다만 0.3/0.5/0.7 가중치로
+단순 블렌드해보니 baseline(742.14)보다 소폭 높은 751점대가 나와서(2024만 보고 고른 값이라 아직 못 믿음)
+실험 6으로 이어짐.
+
+### 실험 6 — baseline+EB 블렌드, discovery(2022+2023) 잠금 → confirmation(2024) 검증 (`modeling/eb_blend_discovery_confirm.py`)
+
+실험 5의 블렌드 가중치를 confirmation 연도(2024)를 안 보고 discovery(2022+2023)의 worst-case 기준으로만
+골라서 재검증 — 오늘 여러 번 지킨 "discovery에서 잠그고 confirmation은 순수 확인만" 원칙 그대로 적용.
+
+```
+discovery: w_eb를 0→1로 올릴수록 2022·2023 둘 다 단조 개선, worst-case 최댓값 = w=0.5
+confirmation(2024, 가중치 선택에 전혀 안 쓴 값): baseline 742.14 → blend(w=0.5) 751.07  (+8.93)
+```
+
+**오늘 세션에서 유일하게 방법론을 통과한 양의 결과.** 다만 +8.93을 Brier 차이로 환산하면 약 0.0000223로,
+우리가 기준으로 쓰는 노이즈 바닥선(경기 클러스터 부트스트랩 sd ≈0.000125)보다 작다 — 방향은 discovery
+두 폴드와 confirmation 셋 다 일관되게 맞았지만, 절대 크기가 작아 "확실히 노이즈 이상"이라고 못 박기는
+어렵다. residual 상관이 0.9997이었던 것과 일관된 결과(거의 안 겹치지만 완전히 겹치지도 않아서 아주 작은
+분산 감소만 얻음).
+
+**판정**: 채택 여부 보류. hand_matchup도 로컬(rolling OOT 2개 폴드)은 통과했다가 실제 LB에서 뒤집힌
+전례가 있어서, 이번 결과(그것보다 더 엄격한 discovery/confirmation 분리까지 통과했지만 개선폭은 훨씬
+작음)도 곧바로 제출 후보로 올리지 않고 기록만 해둔다. 코드: `hierarchical_eb_features.py`(실험 3에서
+만든 것 재사용) + 위 두 스크립트, 전부 우리가 직접 작성한 독립 코드.
+
 ### 종합
 
-이번 세션 신규 실험 4개(R-only, F 레짐필터, 계층형 EB, 레벨시프트 calibration) **전부 primary 기준
-기각**. 기존 실험(위 로그 전체)까지 합치면 baseline(raw 44피처, 필터 없음, CatBoost, 2019~2024 전체
-학습)을 넘은 시도가 하나도 없다. 세 개의 독립적 소스(우리 자체 실험, 다른참가자/aimers,
+이번 세션 신규 실험 6개 중 5개(R-only, F 레짐필터, 계층형 EB 단독, 레벨시프트 calibration, 그리고
+model_diversity 반복확인 성격의 실험 5)는 primary 기준 기각, **실험 6(discovery/confirmation을 통과한
+baseline+EB 블렌드, +8.93)만 유일하게 방법론을 통과했지만 개선폭이 노이즈 바닥선 근처라 보류 상태.**
+기존 실험(위 로그 전체)까지 합치면 baseline(raw 44피처, 필터 없음, CatBoost, 2019~2024 전체 학습)을
+확실하게 넘은 시도는 여전히 없다. 세 개의 독립적 소스(우리 자체 실험, 다른참가자/aimers,
 다른참가자)가 같은 결론에 수렴했다: **이 44피처 안에서는 CatBoost + 전체 데이터가 사실상 실질적
-상한**이고, feature/data/calibration 조정으로는 더 못 번다는 근거가 이제 충분히 쌓였다.
-**`submit/submit.zip`(789.23)을 최종안으로 재확정**하고, 남은 시간은 monotone_constraints 정도만
-저비용으로 한 번 더 확인해본 뒤 Phase 3 대비로 넘어가는 걸 권장.
+상한**이고, feature/data/calibration 조정으로는 크게 못 번다.
+**`submit/submit.zip`(789.23)을 유효한 최종안으로 유지**하고(V14 1032.00은 위 "V14 철회" 절 참고,
+유효하지 않음), 남은 시간은 monotone_constraints 정도만 저비용으로 한 번 더 확인해본 뒤 Phase 3
+대비로 넘어가는 걸 권장.
