@@ -1,0 +1,47 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  residual correlation(현재, hand+month) = 1.0000
+  현재 단독: 801.93
+  hand+month 단독: 793.37
+  --- blend alpha sweep (0=현재, 1=hand+month) ---
+    alpha=0.0: 801.93
+    alpha=0.1: 801.81
+    alpha=0.2: 801.52
+    alpha=0.3: 801.07
+    alpha=0.4: 800.46
+    alpha=0.5: 799.69
+    alpha=0.6: 798.75
+    alpha=0.7: 797.65
+    alpha=0.8: 796.38
+    alpha=0.9: 794.96
+    alpha=1.0: 793.37
+
+===== STRESS: <2023 -> 2023 =====
+  residual correlation(현재, hand+month) = 0.9998
+  현재 단독: 755.63
+  hand+month 단독: 796.52
+  --- blend alpha sweep (0=현재, 1=hand+month) ---
+    alpha=0.0: 755.63
+    alpha=0.1: 764.09
+    alpha=0.2: 771.58
+    alpha=0.3: 778.09
+    alpha=0.4: 783.64
+    alpha=0.5: 788.21
+    alpha=0.6: 791.82
+    alpha=0.7: 794.45
+    alpha=0.8: 796.11
+    alpha=0.9: 796.80
+    alpha=1.0: 796.52
+
+===== alpha별 두 폴드 동시 비교 =====
+  alpha=0.0: primary=801.93  stress=755.63
+  alpha=0.1: primary=801.81  stress=764.09
+  alpha=0.2: primary=801.52  stress=771.58
+  alpha=0.3: primary=801.07  stress=778.09
+  alpha=0.4: primary=800.46  stress=783.64
+  alpha=0.5: primary=799.69  stress=788.21
+  alpha=0.6: primary=798.75  stress=791.82
+  alpha=0.7: primary=797.65  stress=794.45
+  alpha=0.8: primary=796.38  stress=796.11
+  alpha=0.9: primary=794.96  stress=796.80
+  alpha=1.0: primary=793.37  stress=796.52

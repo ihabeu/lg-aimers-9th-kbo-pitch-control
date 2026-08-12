@@ -1,0 +1,16 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  기존 2-stage(전체피처 base + corrector): 801.93
+  Stage1(ability만) 단독: 645.43
+  Stage1+Stage2(ability+situation 분리): 708.20
+  Stage1+2+3(3-stage 전체): 780.00
+
+===== STRESS: <2023 -> 2023 =====
+  기존 2-stage(전체피처 base + corrector): 755.63
+  Stage1(ability만) 단독: 5.15
+  Stage1+Stage2(ability+situation 분리): 0.00
+  Stage1+2+3(3-stage 전체): 713.96
+
+요약 (2stage, 3stage):
+2023->2024: (801.9291560629526, 780.0001322327943)
+2022->2023: (755.6266020357527, 713.9611832457815)

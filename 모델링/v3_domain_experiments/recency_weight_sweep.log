@@ -1,0 +1,22 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  lambda=0.0: 734.49 (=baseline, 가중치 없음)
+  lambda=0.05: 719.71
+  lambda=0.1: 703.61
+  lambda=0.15: 726.13
+  lambda=0.2: 711.85
+  lambda=0.3: 726.38
+  lambda=0.5: 703.72
+  lambda=0.7: 711.97
+  lambda=1.0: 695.39
+
+===== STRESS: <2023 -> 2023 =====
+  lambda=0.0: 10.25 (=baseline, 가중치 없음)
+  lambda=0.05: 0.00
+  lambda=0.1: 0.00
+  lambda=0.15: 0.00
+  lambda=0.2: 0.00
+  lambda=0.3: 0.00
+  lambda=0.5: 3.44
+  lambda=0.7: 3.18
+  lambda=1.0: 7.83

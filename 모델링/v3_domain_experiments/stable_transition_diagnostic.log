@@ -1,0 +1,22 @@
+
+===== PRIMARY: target=2024 =====
+/Users/choehabin/Library/CloudStorage/OneDrive-개인/lg aimers/모델링/v3_domain_experiments/stable_transition_diagnostic.py:37: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  g = history.groupby(["pitcher_id", "season"]).apply(
+role_shift(직전-그전 F비중 변화) 분포: mean=-0.001 std=0.354 n=289
+
+transition 투수 행 수: 27512 / stable: 225995
+  transition: n=27512 success_rate=0.4789 pred_mean=0.4922 residual_mean=-0.0133 base_BSS=248.04
+  stable: n=225995 success_rate=0.4870 pred_mean=0.4941 residual_mean=-0.0072 base_BSS=790.82
+
+corr(role_shift, residual) 행 단위 = -0.0011 (n=160946, p=0.6635)
+
+===== STRESS: target=2023 =====
+/Users/choehabin/Library/CloudStorage/OneDrive-개인/lg aimers/모델링/v3_domain_experiments/stable_transition_diagnostic.py:37: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  g = history.groupby(["pitcher_id", "season"]).apply(
+role_shift(직전-그전 F비중 변화) 분포: mean=0.028 std=0.377 n=261
+
+transition 투수 행 수: 20514 / stable: 225011
+  transition: n=20514 success_rate=0.4827 pred_mean=0.5043 residual_mean=-0.0216 base_BSS=0.00
+  stable: n=225011 success_rate=0.5015 pred_mean=0.5023 residual_mean=-0.0008 base_BSS=15.01
+
+corr(role_shift, residual) 행 단위 = +0.0080 (n=153159, p=0.0018)

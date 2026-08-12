@@ -597,6 +597,67 @@ V14 때와 같은 좋은 패턴이지만 이번엔 완전 독립 개발이라 �
 재현값 소수점까지 일치 확인, 245,789행 스트레스 테스트 약 2.3초(제한 10분). local 대표 점수(primary)
 **801.93**, 실제 LB **879.7995048079**.
 
+### 실험 10 — 능력×상황 조건부 피처 (hand/count/month), 879.80 이후 신규 탐색
+
+corrector importance가 상황 정보(game_month/batter_hand/strikes_before) 위주라는 관찰에서 출발.
+투수별 EB-smoothed 조건부 성공률(pitcher×batter_hand, pitcher×count, pitcher×month, leak-safe)을
+corrector 입력에 추가.
+
+| 조합 | primary | stress |
+|---|---:|---:|
+| 없음(현재) | 801.93 | 755.63 |
+| hand | 793.06(-8.87) | 790.34(+34.71) |
+| count | 796.33(-5.60) | 768.77(+13.15) |
+| month | 794.35(-7.58) | 760.17(+4.54) |
+| hand+month | 793.37(-8.56) | 796.52(+40.89) |
+| hand+count+month | 792.14(-9.79) | 798.14(+42.52) |
+
+전부 같은 방향(primary↓/stress↑)의 트레이드오프. **residual correlation(현재 vs hand+month) =
+0.9998~1.0000** — 사실상 같은 예측이라 블렌드로 "둘 다 개선"되는 지점 없음(alpha 스윕으로 확인,
+완전히 매끄러운 트레이드오프 곡선). **기각(둘 다 이겨야 채택 원칙 유지), 참고용으로만 기록.**
+
+### 실험 11 — residual bias 스캔 (pitcher-disjoint cross-fit)
+
+현재 champion의 2024 cross-fit residual을 segment/pitcher_hand/batter_hand/month/dayofweek/
+base_state/inning 및 쌍별 조합으로 스캔. 표본 충분(n≥300)한 것 중 가장 뚜렷한 건
+`pitcher_hand×batter_hand`(L×L -0.0118, L×R +0.0096, R×L +0.0048, R×R -0.0031) — **이미 기각된
+hand_matchup과 동일 신호**(로컬은 좋았는데 실제 LB 하락 전례). 나머지 큰 bias(10월 +0.029, 12회
+연장 +0.043, 일요일 -0.020)는 전부 n<3000의 소표본 노이즈. **새로운 미탐색 신호 없음 확인.**
+
+### 실험 12 — Trackman 과거 투수 프로필 12개, residual correlation 진단
+
+`modeling/trackman_features.py`(우리 자체 매핑, 신뢰 332명/커버리지 61~66%)의 12개 피처 전부
+현재 champion residual과 상관관계 **거의 0**(-0.0038~+0.0027, n=163,649). 세션 초반 baseline
+위에서의 Trackman 실패(-31~-43)가 이번 구조에서도 독립 재확인됨. **Trackman historical profile
+계열은 완전 종료.**
+
+### 실험 13 — 3-stage 구조(ability/situation 강제 분리) — 기각
+
+Stage1(선수 이력만) → Stage2(상황만으로 Stage1 잔차 설명) → Stage3(기존 segment corrector)로
+분리. 전체피처를 한 모델에 다 주는 기존 2-stage보다 두 폴드 다 나쁨(primary 801.93→780.00,
+stress 755.63→713.96). CatBoost가 스스로 찾는 능력×상황 교호작용을 인위적 분리가 오히려 방해.
+
+### 실험 14 — recency weighting(season 지수감쇠) λ 9개 정밀 스윕 — 기각
+
+세션 초반 λ=0.5 단일 테스트(694.91, 기각)를 λ=0.05~1.0 9개 값으로 재확인. **모든 λ에서 λ=0(가중치
+없음)보다 나쁨** — primary 최선 대안(λ=0.5)도 -30.77, stress는 대부분 λ에서 0.00까지 하락.
+"오래된 데이터를 버리지 말 것"이 이번에도 강하게 재확인됨. recency weighting 트랙 완전 종료.
+
+### 종합 (2026-08-13, 실험 10~14 이후)
+
+879.80 champion 이후 시도한 5개 방향(조건부 능력 피처, residual bias 스캔, Trackman, 3-stage 구조,
+recency weighting) 중 확실한 개선은 없음. 조건부 능력 피처(hand+month)만 유일하게 "트레이드오프
+후보"로 남아있고 나머지 4개는 명확히 기각. `submit_segment_residual_corrector/submit.zip`(879.80)이
+계속 유효 champion.
+
+**실험 13 범위 명확화**: 기각된 건 "CatBoost가 스스로 찾는 능력×상황 교호작용을 인위적으로
+분해하는 3-stage"(Ability→Situation→Residual)만이다. "서로 다른 모델/정보원을 단계적으로 결합"하는
+구조 자체가 기각된 게 아님 — 다만 (a) 여러 tree/boosting 모델 블렌드는 이미 residual 상관관계
+0.998+(세션 초반 model_diversity, 이 대화의 corrector 모델 종류 비교 둘 다)로 다양성이 거의 없었고,
+(b) Trackman을 새 정보원으로 쓰는 것도 실험 12에서 residual 상관관계 거의 0으로 막힘 — 그래서
+"다른 정보원 기반 3-stage" 자체가 유효하려면 먼저 residual diversity가 있는 모델/정보원을 찾아야
+한다는 게 현재까지의 결론.
+
 ### 종합 (2026-08-12 업데이트: 실험 9.1로 결론 갱신)
 
 신규 실험 9개 중 7개(R-only, F 레짐필터, 계층형 EB 단독, 레벨시프트 calibration, model_diversity

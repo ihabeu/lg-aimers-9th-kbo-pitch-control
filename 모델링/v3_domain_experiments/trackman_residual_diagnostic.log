@@ -1,0 +1,25 @@
+전체 champion BSS(cross-fit, 801.93와 같아야 함): 801.93
+
+Trackman 매핑 구축 중...
+전체 train 투수 792명 중 신뢰 매핑 332명 (41.9%), many-to-one 충돌 제거 30건
+2024 검증행 기준 Trackman 커버리지: 64.6%
+
+===== STEP 1: Trackman 피처 12개 vs base residual / final residual 상관관계 =====
+feature                         n_valid   corr_vs_base_resid  corr_vs_final_resid   corr_vs_asof_success
+hist_avg_rel_speed               163649               0.0016               0.0018                    nan
+hist_std_rel_speed               163649               0.0007               0.0007                    nan
+hist_avg_spin_rate               163649               0.0012               0.0014                    nan
+hist_std_spin_rate               163649              -0.0030              -0.0038                    nan
+hist_avg_induced_vert_break      163649               0.0016               0.0016                    nan
+hist_avg_horz_break              163649              -0.0003              -0.0001                    nan
+hist_avg_extension               163649               0.0019               0.0016                    nan
+hist_avg_rel_height              163649               0.0010               0.0012                    nan
+hist_avg_rel_side                163649               0.0006               0.0009                    nan
+hist_fastball_ratio              163649               0.0027               0.0027                    nan
+hist_breaking_ratio              163649               0.0014               0.0015                    nan
+hist_offspeed_ratio              163649              -0.0033              -0.0034                    nan
+
+===== segment별 커버리지 =====
+  core: n=178729 coverage=64.9%
+  hybrid: n=44768 coverage=65.6%
+  dev: n=30010 coverage=61.2%
