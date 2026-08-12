@@ -1,8 +1,14 @@
 """
 789.23 champion CatBoost(model/catboost_baseline.cbm, 이미 2019~2024 전체로 학습됨, 안 건드림)를
-base로 그대로 쓰고, game_type(R/F) segment별 잔차 보정기(ExtraTrees)만 오프라인으로 학습해서
-model/correctors.joblib에 저장. v3_domain_experiments/segment_residual_corrector.py에서 검증한 것과
-같은 구조를 실제 배포용으로 재현(그 스크립트는 cross-fit 검증용, 이건 전체 라벨로 최종 학습).
+base로 그대로 쓰고, 3-way segment별 잔차 보정기(ExtraTrees)만 오프라인으로 학습해서
+model/correctors.joblib에 저장. v3_domain_experiments/segment_residual_corrector_3way.py에서
+검증한 것과 같은 구조를 실제 배포용으로 재현(그 스크립트는 cross-fit 검증용, 이건 전체 라벨로 최종 학습).
+
+segment 정의(우리 자체 EDA로 확인, HANDOFF.md "데이터 핵심 발견"): team 13이 F 참여 비율 38.15%로
+다른 정상 팀(3~10%)보다 유독 높음.
+  dev   : game_type == 'F'
+  hybrid: game_type == 'R' and team 13 관여
+  core  : 나머지 R
 
 잔차 학습 신호: "2019~2023으로 학습한 CatBoost가 2024를 예측했을 때 남긴 오차"를 2024 라벨 전체로
 학습(비-cross-fit, 최종 배포용). 이 오차 패턴이 2025에도 비슷하게 나타난다고 가정하고, 실제 champion
@@ -25,7 +31,13 @@ from baseline_catboost import FEATURES, CAT_FEATURES, L2_LEAF_REG  # noqa: E402
 ROOT = Path(__file__).resolve().parent
 CORRECTOR_CFG = dict(n_estimators=100, max_depth=10, min_samples_leaf=200, max_features=0.7)
 SEEDS = (42, 2026, 314)
-SEGMENTS = ["R", "F"]
+SEGMENTS = ["core", "hybrid", "dev"]
+HYBRID_TEAM_ID = 13
+
+
+def assign_segment(df: pd.DataFrame) -> np.ndarray:
+    involves_hybrid = (df["pitcher_team_id"] == HYBRID_TEAM_ID) | (df["batter_team_id"] == HYBRID_TEAM_ID)
+    return np.where(df["game_type"] == "F", "dev", np.where(involves_hybrid, "hybrid", "core"))
 
 
 def fit_category_maps(df: pd.DataFrame) -> dict:
@@ -72,12 +84,13 @@ def main():
     residual = y_target - residual_source_pred
     category_maps = fit_category_maps(df)
     X = corrector_matrix(residual_target, category_maps)
-    game_type = residual_target["game_type"].to_numpy()
+    segment = assign_segment(residual_target)
+    print("segment 분포:", pd.Series(segment).value_counts().to_dict())
 
     correctors = {}
     for seed in SEEDS:
         for seg in SEGMENTS:
-            mask = game_type == seg
+            mask = segment == seg
             model = ExtraTreesRegressor(n_jobs=-1, random_state=16200 + int(seed), **CORRECTOR_CFG)
             model.fit(X.loc[mask], residual[mask])
             correctors[(seg, seed)] = model
@@ -89,12 +102,12 @@ def main():
     test = load("test.csv")
     champion_pred = champion.predict_proba(Pool(test[FEATURES], cat_features=CAT_FEATURES))[:, 1]
     X_test = corrector_matrix(test, category_maps)
-    test_game_type = test["game_type"].to_numpy()
+    test_segment = assign_segment(test)
     correction = np.zeros(len(test))
     for seed in SEEDS:
         seed_corr = np.zeros(len(test))
         for seg in SEGMENTS:
-            mask = test_game_type == seg
+            mask = test_segment == seg
             if not mask.any():
                 continue
             seed_corr[mask] = correctors[(seg, seed)].predict(X_test.loc[mask])
@@ -103,7 +116,10 @@ def main():
     print("SANITY (로컬 test.csv 5행) champion base:", champion_pred, "final:", final)
 
     joblib.dump(
-        {"correctors": correctors, "seeds": list(SEEDS), "segments": SEGMENTS, "category_maps": category_maps},
+        {
+            "correctors": correctors, "seeds": list(SEEDS), "segments": SEGMENTS,
+            "category_maps": category_maps, "hybrid_team_id": HYBRID_TEAM_ID,
+        },
         ROOT / "model" / "correctors.joblib", compress=3,
     )
     print("saved:", ROOT / "model" / "correctors.joblib")

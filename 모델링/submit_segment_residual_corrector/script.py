@@ -62,6 +62,11 @@ def corrector_matrix(df: pd.DataFrame, category_maps: dict) -> pd.DataFrame:
     return x.apply(pd.to_numeric, errors="coerce")
 
 
+def assign_segment(df: pd.DataFrame, hybrid_team_id: int) -> np.ndarray:
+    involves_hybrid = (df["pitcher_team_id"] == hybrid_team_id) | (df["batter_team_id"] == hybrid_team_id)
+    return np.where(df["game_type"] == "F", "dev", np.where(involves_hybrid, "hybrid", "core"))
+
+
 def main() -> None:
     test_df = pd.read_csv(find_test_csv())
 
@@ -71,13 +76,13 @@ def main() -> None:
 
     artifacts = joblib.load(CORRECTORS_PATH)
     X = corrector_matrix(test_df, artifacts["category_maps"])
-    game_type = test_df["game_type"].to_numpy()
+    segment = assign_segment(test_df, artifacts["hybrid_team_id"])
 
     correction = np.zeros(len(test_df), dtype=np.float64)
     for seed in artifacts["seeds"]:
         seed_correction = np.zeros(len(test_df), dtype=np.float64)
         for seg in artifacts["segments"]:
-            mask = game_type == seg
+            mask = segment == seg
             if not mask.any():
                 continue
             seed_correction[mask] = artifacts["correctors"][(seg, seed)].predict(X.loc[mask])

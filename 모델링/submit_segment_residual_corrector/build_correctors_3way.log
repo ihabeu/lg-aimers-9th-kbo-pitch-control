@@ -1,0 +1,14 @@
+residual-source 모델 학습 (2019~2023 -> 2024 예측용, 배포에는 안 씀)
+residual-source 2024 BSS (sanity, segment_residual_corrector.py 734.49와 같아야 함): 734.49
+segment 분포: {'core': 178729, 'hybrid': 44768, 'dev': 30010}
+  corrector fit segment=core seed=42 n=178729
+  corrector fit segment=hybrid seed=42 n=44768
+  corrector fit segment=dev seed=42 n=30010
+  corrector fit segment=core seed=2026 n=178729
+  corrector fit segment=hybrid seed=2026 n=44768
+  corrector fit segment=dev seed=2026 n=30010
+  corrector fit segment=core seed=314 n=178729
+  corrector fit segment=hybrid seed=314 n=44768
+  corrector fit segment=dev seed=314 n=30010
+SANITY (로컬 test.csv 5행) champion base: [0.4559839  0.43178937 0.47951491 0.5023532  0.47767973] final: [0.45388876 0.43117691 0.47675861 0.51054054 0.48530626]
+saved: /Users/choehabin/Library/CloudStorage/OneDrive-개인/lg aimers/모델링/submit_segment_residual_corrector/model/correctors.joblib

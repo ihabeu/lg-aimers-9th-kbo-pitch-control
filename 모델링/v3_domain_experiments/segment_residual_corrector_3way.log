@@ -1,0 +1,25 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+segment 분포: {'core': 178729, 'hybrid': 44768, 'dev': 30010}
+base BSS: 734.49
+  base core: 576.93 (n=178729)
+  base hybrid: 638.72 (n=44768)
+  base dev: 351.70 (n=30010)
+corrected BSS (3-seed consensus): 801.93  gain: 67.43
+  corrected core: 629.92
+  corrected hybrid: 708.20
+  corrected dev: 503.56
+
+===== STRESS: <2023 -> 2023 =====
+segment 분포: {'core': 175785, 'hybrid': 44054, 'dev': 25686}
+base BSS: 10.25
+  base core: 54.02 (n=175785)
+  base hybrid: 0.00 (n=44054)
+  base dev: 0.00 (n=25686)
+corrected BSS (3-seed consensus): 755.63  gain: 745.38
+  corrected core: 556.31
+  corrected hybrid: 945.98
+  corrected dev: 70.02
+
+요약: 2023->2024 (base, corrected) = (np.float64(734.494427358634), np.float64(801.9291560629526))  / 2022->2023 = (np.float64(10.249155014097067), np.float64(755.6266020357527))
+(비교: R/F 2-way corrector -- 2023->2024 base734.49/corrected790.33, 2022->2023 base10.25/corrected634.06)

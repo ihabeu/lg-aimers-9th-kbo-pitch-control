@@ -497,13 +497,36 @@ pitcher-disjoint cross-fit(3 seed) 검증, 2023→2024/2022→2023 두 폴드:
 | 2023→2024 (primary) | 734.49 | **790.33** | **+55.83** |
 | 2022→2023 (stress) | 10.25 | **634.06** | **+623.81** |
 
-두 폴드 다 크게, 같은 방향으로 개선. **채택.** 제출 패키지: `submit_segment_residual_corrector/submit.zip`
-— champion `.cbm` 그대로 재사용 + `build_correctors.py`가 오프라인으로 학습한 corrector(segment×seed
-6개 ExtraTrees + 고정 카테고리 인코딩 맵)를 `model/correctors.joblib`로 저장, `script.py`가 test.csv에
-적용. 로컬 test.csv 재현값 소수점까지 일치 확인, 245,789행 스트레스 테스트 약 2.3초(제한 10분).
-실제 LB 제출은 사용자 진행 예정.
+두 폴드 다 크게, 같은 방향으로 개선. **채택.**
 
-### 종합 (2026-08-12 업데이트: 실험 9로 결론 갱신)
+### 실험 9.1 — 3-way segment로 확장 (`v3_domain_experiments/segment_residual_corrector_3way.py`) — ✅ 채택, 실험 9를 대체
+
+R/F 2-way보다 세밀하게 나누면 더 좋을지 확인. 3번째 segment는 우리 자체 EDA(HANDOFF.md "데이터 핵심
+발견")에서 이미 확인한 team 13의 F 참여 비율 이상치(38.15%, 다른 정상 팀은 3~10%)를 근거로 함 —
+다른참가자의 hybrid team 발견 재사용 아님, 우리가 이 세션 초반에 독립적으로 찾은 것.
+
+```
+game_type=='F' → dev / game_type=='R' and team13 관여 → hybrid / 나머지 R → core
+```
+
+| 폴드 | R/F 2-way | 3-way |
+|---|---:|---:|
+| 2023→2024 (primary) | 790.33 | **801.93** |
+| 2022→2023 (stress) | 634.06 | **755.63** |
+
+두 폴드 다 3-way가 더 좋음. **채택, 제출 패키지를 3-way로 갱신.**
+
+F 안에서 100% F전용 극소표본 팀(22/23/25, 6년 합쳐 2700행 정도)까지 4번째 segment로 더 쪼개는 것도
+시도(`segment_residual_corrector_4way.py`) — primary -3.10 / stress +1.30로 사실상 노이즈, **기각**
+(표본 부족으로 corrector가 안정적으로 학습 안 됨, B0의 B2.3 F팀그룹화 실패와 같은 패턴).
+
+제출 패키지: `submit_segment_residual_corrector/submit.zip` — champion `.cbm` 그대로 재사용 +
+`build_correctors.py`가 오프라인으로 학습한 corrector(segment 3개×seed 3개=9개 ExtraTrees + 고정
+카테고리 인코딩 맵)를 `model/correctors.joblib`로 저장, `script.py`가 test.csv에 적용. 로컬 test.csv
+재현값 소수점까지 일치 확인, 245,789행 스트레스 테스트 약 2.3초(제한 10분). local 대표 점수(primary)
+**801.93**. 실제 LB 제출은 사용자 진행 예정.
+
+### 종합 (2026-08-12 업데이트: 실험 9.1로 결론 갱신)
 
 신규 실험 9개 중 7개(R-only, F 레짐필터, 계층형 EB 단독, 레벨시프트 calibration, model_diversity
 반복확인 성격의 실험 5, F 시즌내 온도차, monotone_constraints)는 primary 기준 기각, 실험 6(baseline+EB
@@ -511,8 +534,8 @@ pitcher-disjoint cross-fit(3 seed) 검증, 2023→2024/2022→2023 두 폴드:
 이 시점에서 사실상 소진됐다고 판단** — 세 개의 독립 소스(우리 자체 실험, 다른참가자/aimers,
 다른참가자)가 "이 44피처 안에서는 CatBoost+전체데이터가 실질적 상한"이라는 결론에 수렴했다.
 
-**다만 실험 9(champion + game_type segment residual corrector)로 이 상한을 실제로 넘었다.** 핵심은
+**다만 실험 9/9.1(champion + segment residual corrector)로 이 상한을 실제로 넘었다.** 핵심은
 피처를 더 추가하는 게 아니라 **base 모델은 그대로 두고 그 오차를 segment별로 별도 학습해서 보정**하는
 구조 변경이었다 — "feature 조정으로는 못 번다"는 위 결론과 모순되지 않는다(feature가 아니라 2단계
-구조를 바꾼 것). **`submit_segment_residual_corrector/submit.zip`(로컬 primary 790.33, +55.83)이 다음
-제출 후보.** `submit/submit.zip`(789.23)은 그대로 안전망으로 유지.
+구조를 바꾼 것). **`submit_segment_residual_corrector/submit.zip`(3-way, 로컬 primary 801.93,
++67.43)이 다음 제출 후보.** `submit/submit.zip`(789.23)은 그대로 안전망으로 유지.
