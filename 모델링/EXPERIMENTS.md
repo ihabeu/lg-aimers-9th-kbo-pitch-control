@@ -153,4 +153,34 @@ primary 폴드는 shrink=0.75~0.85 구간이 전부 936점대로 평탄(knife-ed
 
 **버그 발견/수정**: `build_artifacts.py`에서 블렌드 가중치를 바꿨는데 `script.py`는 예전 균등 블렌드가 하드코딩돼 있어서 결과가 어긋났음(둘 다 `model/v14_artifacts.joblib`을 쓰지만 blend 가중치 자체가 아티팩트에 저장 안 돼 있었음). `base_blend_weights`를 아티팩트에 추가 저장하고 `script.py`가 거기서 읽도록 수정, 재검증(로컬 test.csv 5행 재현값 소수점까지 일치)으로 확인.
 
-**상태**: 채택, 실제 제출 완료. `submit_v14_domain_residual/submit.zip`(v1.1) 실제 LB **1032.0064496443** — 기존 champion(789.23) 대비 +242.77, 로컬(936.93)보다 실제가 더 높게 나옴(local/actual 정합 사례). 새 champion으로 확정(`HANDOFF.md` 참고). 참고팀 자체 보고값(1044.26, 자기 데이터/검증 기준이라 직접 비교 불가)과는 -12.26 차이인데, 튜닝 전(E004) 버전을 실제 제출해본 적이 없어서 이번 튜닝이 실제 LB에 도움이 됐는지는 아직 분리 확인 안 됨.
+**상태**: 채택, 실제 제출 완료. `submit_v14_domain_residual/submit.zip`(v1.1) 실제 LB **1032.0064496443** — 기존 champion(789.23) 대비 +242.77, 로컬(936.93)보다 실제가 더 높게 나옴(local/actual 정합 사례). 참고팀 자체 보고값(1044.26, 자기 데이터/검증 기준이라 직접 비교 불가)과는 -12.26 차이인데, 튜닝 전(E004) 버전을 실제 제출해본 적이 없어서 이번 튜닝이 실제 LB에 도움이 됐는지는 아직 분리 확인 안 됨.
+
+**⚠️ 이 상태 줄은 나중에 틀린 것으로 확인됨 — 아래 E008 참고.**
+
+---
+
+## E008 (2026-08-12) — E004/E007(V14) 철회
+
+`submit_v14_domain_residual/README.md`를 다시 확인해보니 "다른참가자의 ChatGPT 개발 로그에서 받은 노트북을 그대로 재현"이라고 명시돼 있었음. 다른참가자는 같은 대회(LG Aimers 9기)의 다른 참가자이고, 그 사람이 자신의 ChatGPT 대화에서 만든 실제 노트북을 데이터 경로/하이퍼파라미터만 바꿔 그대로 쓴 것으로 확인됨. DACON 부정 제출 공지(다른 참가자와 형평성에 어긋나는 참가 방식)에 해당할 위험이 있어 철회.
+
+**조치**: `submit/submit.zip`(789.23, 완전 독립 개발)을 유효한 최종 제출로 되돌림. `submit_v14_domain_residual/`은 참고용으로만 보존하고 이후 어떤 실험의 기준선으로도 쓰지 않음. 상세 경위는 `HANDOFF.md` "V14 철회" 절 참고.
+
+---
+
+## E009 (2026-08-12) — B0~B2 참고 자료 (사용자 개인 작업, 아키텍처는 재사용 안 함)
+
+사용자가 개인 ChatGPT 세션에서 V14와 같은 계열 아키텍처(recent-shared-base + 3-domain residual adapter)를 B0부터 B2.3까지 발전시킨 실험 로그(`b0_reference_archive/B0_Readme.md` + 노트북 8개). B0 base(848.35)/residual(917.91) 수치가 E004와 정확히 일치 — 같은 아키텍처 계열임을 보여줌.
+
+주요 발견: B0.3(ExtraTrees capacity, depth=14, 934.42), B1(CatBoost corrector, 887.75, B0.3 미달), B2(F 시즌내 온도차 change-point, 934.42→940.05), B2.3(F 팀별 이질성, 사람이 짠 그룹화는 실패).
+
+**상태**: 아키텍처 자체가 철회된 V14 계열이라 **재사용 안 함**. 인사이트만 참고해서 우리 champion CatBoost(789.23, 독립개발) 위에 독립적으로 재구현 — 결과는 아래 E010 참고. `b0_reference_archive/README.md`에 상세.
+
+---
+
+## E010 (2026-08-12) — 독립 재구현: champion + segment residual corrector
+
+E009의 인사이트(base+segment residual correction 구조, F 팀 이질성, corrector capacity/shrink 개념)를 우리 champion CatBoost(789.23) 위에서 처음부터 독립적으로 재구현. segment 기준(team 13 이상치)은 이 세션 초반 우리 자체 EDA에서 이미 발견한 것을 사용.
+
+로컬 primary 기준: base 734.49 → 3-way segment + ExtraTrees corrector **801.93**. corrector 모델 종류(ExtraTrees/RandomForest/XGBoost/LightGBM), segment 세분화(2/3/4-way), capacity, shrink, corrector 입력 피처(base_pred)까지 전부 로컬 dual-fold(2023→2024 primary, 2022→2023 stress)로 검증.
+
+**상세 실험 로그(9개)는 `HANDOFF.md`의 "실험 9 ~ 9.2" 절에 있음 — 중복 방지를 위해 여기서는 안 옮기고 링크만 남김.** 제출 패키지: `submit_segment_residual_corrector/submit.zip`. **상태**: 로컬 검증 완료, 실제 LB 제출은 사용자 진행 예정.
