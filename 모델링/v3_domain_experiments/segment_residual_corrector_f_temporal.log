@@ -1,0 +1,18 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+base BSS: 734.49
+3-way dev n: 30010
+f_temporal dev_early/dev_late n: 5926 24084
+  3-way (dev 통합): 801.93
+  F를 early/late로 분리: 807.95 (차이 +6.02)
+
+===== STRESS: <2023 -> 2023 =====
+base BSS: 10.25
+3-way dev n: 25686
+f_temporal dev_early/dev_late n: 4457 21229
+  3-way (dev 통합): 755.63
+  F를 early/late로 분리: 745.72 (차이 -9.91)
+
+요약 (base, 3way, f_temporal_5way):
+2023->2024: (np.float64(734.494427358634), np.float64(801.9291560629526), np.float64(807.9470301208369))
+2022->2023: (np.float64(10.249155014097067), np.float64(755.6266020357527), np.float64(745.7199280193283))

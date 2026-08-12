@@ -183,4 +183,4 @@ E009의 인사이트(base+segment residual correction 구조, F 팀 이질성, c
 
 로컬 primary 기준: base 734.49 → 3-way segment + ExtraTrees corrector **801.93**. corrector 모델 종류(ExtraTrees/RandomForest/XGBoost/LightGBM), segment 세분화(2/3/4-way), capacity, shrink, corrector 입력 피처(base_pred)까지 전부 로컬 dual-fold(2023→2024 primary, 2022→2023 stress)로 검증.
 
-**상세 실험 로그(9개)는 `HANDOFF.md`의 "실험 9 ~ 9.2" 절에 있음 — 중복 방지를 위해 여기서는 안 옮기고 링크만 남김.** 제출 패키지: `submit_segment_residual_corrector/submit.zip`. **상태**: 로컬 검증 완료, 실제 LB 제출은 사용자 진행 예정.
+**상세 실험 로그(9개)는 `HANDOFF.md`의 "실험 9 ~ 9.2" 절에 있음 — 중복 방지를 위해 여기서는 안 옮기고 링크만 남김.** 제출 패키지: `submit_segment_residual_corrector/submit.zip`. **상태**: 실제 LB **879.7995048079** — 새 유효 champion(789.23 대비 +90.57, 완전 독립개발). 로컬(801.93)보다 실제가 더 높게 나옴.

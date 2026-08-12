@@ -27,7 +27,8 @@ Phase2 수료 기준: Public LB 549.51 이상. 데이터 설명서는 [`data/dat
 | 5차 | CatBoost + matchup 3종 | 2019~2024 전체 | 711.05 (로컬 703.10과 거의 일치, baseline 789.23 미달로 폐기) |
 | 7차 | CatBoost + recent_k_pitch_rate(스냅샷 고정) | 2019~2024 전체 | **252.51** (로컬 966.18과 완전히 다른 방향 — 원인 규명 후 폐기, 아래 상세 참고) |
 | 6차 | CatBoost + hand_matchup | 2019~2024 전체 | **787.40** (로컬 rolling OOT는 baseline 대비 +18.40/+21.06으로 확실히 개선이었는데 실제 LB는 오히려 -1.83 낮음 — local/actual 재괴리 사례. 제출 파이프라인 자체는 검증 완료: 모델 feature 순서/cat_features가 script.py와 완전 일치, in-sample 2024 재현 시 score=879.78·예측확률 분포 정상·hand_matchup 카테고리 4종 정상 생성 → 파이프라인 버그 아니라 진짜 2025 일반화 문제로 판단) |
-| 8차 (2026-08-12) | V14(recent shared base + 3-domain residual adapter, v1.1 튜닝) | 2024 시즌(base) + 2024 라벨(residual adapter) — recent-shared-base 철학 | 1032.0064496443 — **🚫 철회함(아래 "V14 철회" 절 참고). 다른 참가자(다른참가자)의 실제 노트북을 그대로 재현한 것으로 확인돼 부정 제출 위험. 유효 champion 아님, 789.23이 유효한 최종 제출.** |
+| 8차 (2026-08-12) | V14(recent shared base + 3-domain residual adapter, v1.1 튜닝) | 2024 시즌(base) + 2024 라벨(residual adapter) — recent-shared-base 철학 | 1032.0064496443 — **🚫 철회함(아래 "V14 철회" 절 참고). 다른 참가자(다른참가자)의 실제 노트북을 그대로 재현한 것으로 확인돼 부정 제출 위험. 유효 champion 아님.** |
+| 9차 (2026-08-13) | champion CatBoost(789.23, 완전 독립개발) + 3-way segment(core/hybrid/dev) residual corrector(ExtraTrees) | champion은 그대로, corrector만 오프라인 학습 — `submit_segment_residual_corrector/submit.zip` | **879.7995048079 (현재 최선, 유효 champion)** — 789.23 대비 +90.57. 로컬 primary(801.93)보다 실제가 더 높게 나옴(local/actual 정합). V14 코드 재사용 없이 완전 독립 개발, 아키텍처(base+segment residual correction)만 참고하고 구현/segment 기준/하이퍼파라미터는 전부 우리 자체 EDA·검증(`EXPERIMENTS.md` E010, 아래 "실험 9~9.2"). |
 
 **hand_matchup 최종 판정**: 제출 모델로는 채택 안 함(789.23 유지). 다만 "선수별 조건부 이력 정보"라는 가설 자체를 검증하려고 STEP 1(platoon feature) 4개를 독립적으로 테스트함 — A: pitcher_vs_current_batter_hand_rate 724.39(-10.10), B: batter_vs_current_pitcher_hand_rate 678.90(-55.59), C: pitcher_platoon_advantage 734.33(-0.16), D: batter_platoon_advantage 703.55(-30.94). 전부 baseline 미달로 **platoon 방향도 종료**. hand_matchup의 로컬 개선이 실제 LB로 이어지지 않은 것과 별개로, platoon 자체도 로컬에서부터 신호가 없었음(코드: [`platoon_features.py`](modeling/platoon_features.py), [`platoon_ablation.py`](modeling/platoon_ablation.py)).
 
@@ -52,11 +53,21 @@ LB **1032.0064496443**을 받아 한때 champion으로 기록됐으나, **이 �
 운영진 문의 및 재제출 여부를 진행 중. **`submit_v14_domain_residual/`은 참고용으로만 보존하고 이후
 어떤 실험의 기준선으로도 쓰지 않는다.**
 
-## 현재 최선 모델 (제출 완료, 789.23) — 유효한 champion
+## ✅ 2026-08-13 새 champion — 879.7995048079 (완전 독립 개발)
+
+V14 철회 이후 아이디어(base + segment residual correction 구조)만 참고해서 처음부터 새로 만든
+`submit_segment_residual_corrector/`가 실제 LB **879.7995048079**를 받아 789.23을 갱신했다.
+champion CatBoost(789.23) 모델 자체는 그대로 두고, segment(core/hybrid/dev, team 13 관여 여부로
+분리 — 이 세션에서 독립적으로 발견)별로 ExtraTrees residual corrector만 추가한 구조. 상세 검증
+과정(segment 3-way 확정, corrector 모델 종류 4종 비교, capacity/shrink 튜닝, base_pred 피처 기각)은
+아래 "실험 9 ~ 9.2" 절과 `EXPERIMENTS.md` E010 참고. 코드는 V14/B0 계열을 전혀 재사용하지 않고
+`v3_domain_experiments/segment_residual_corrector*.py`에 전부 독립적으로 작성됨.
+
+## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80이 최신
 
 - 위치: [`modeling/baseline_catboost.py`](modeling/baseline_catboost.py) + [`modeling/baseline_catboost.ipynb`](modeling/baseline_catboost.ipynb)
 - 레시피: CatBoost, raw 44피처(전처리 없음, 결측치 네이티브 처리), `depth=6, learning_rate=0.05, l2_leaf_reg=15`, iterations는 2019-23→24 검증에서 찾은 값(204)으로 2019~2024 전체 재학습
-- 제출 패키지: [`submit/submit.zip`](submit/submit.zip) (model/, script.py, requirements.txt)
+- 제출 패키지: [`submit/submit.zip`](submit/submit.zip) (model/, script.py, requirements.txt) — 879.80 champion의 base로 그대로 재사용됨
 - 로컬 검증(2019-23→24, 참고용 — 실제 제출 모델과는 다른 데이터로 학습된 모델의 점수임): Brier 0.247972, Score 734.49
 
 ## 데이터 핵심 발견 (사실 vs 추측 구분 — 상세는 [`INSIGHTS.md`](INSIGHTS.md))
@@ -558,11 +569,33 @@ base_pred는 중복 정보였고, regime shift 상황에서 오히려 일반화�
 계속 로컬로만 파면 V14 E007과 같은 로컬 과적합 위험. **실제 LB 제출로 이 아키텍처(local primary
 801.93) 자체가 진짜 개선인지 확인하는 게 다음 단계로 권장됨.**
 
+### 실험 9.3 — F(dev) segment를 early/late로 추가 분리 (`segment_residual_corrector_f_temporal.py`)
+
+R_CORE/R_ANCHOR/F(우리 core/hybrid/dev) 3-way는 고정하고, F 안에서만 4월(early)/5월 이후(late)로
+한 번 더 나눠서 각각 별도 corrector를 붙이는 게 도움되는지 확인 — 예전에 이 시간 정보를 CatBoost
+"피처"로 추가했을 때(E-실험, f_season_progress)는 기각됐었는데, 이번엔 "구조적 분리"로 다시 시도.
+
+| | 2023→2024 (primary) | 2022→2023 (stress) |
+|---|---:|---:|
+| dev 통합(3-way) | 801.93 | 755.63 |
+| dev를 early/late 분리 | 807.95 (+6.02) | 745.72 (-9.91) |
+
+**기각.** primary는 좋아지지만 stress가 더 크게 나빠져서 순손해. 3-way(dev 통합) 유지.
+
+### ✅ 실제 LB 확인 (2026-08-13)
+
+`submit_segment_residual_corrector/submit.zip` 실제 Public LB **879.7995048079** — champion
+단독(789.23) 대비 **+90.57**, 로컬 primary(801.93)보다 실제가 더 높게 나옴(local/actual 정합,
+V14 때와 같은 좋은 패턴이지만 이번엔 완전 독립 개발이라 안전함). **새 유효 champion으로 확정.**
+이 아키텍처(base 그대로 + segment residual correction) 자체가 로컬에서 본 것처럼 실제로도 통한다는
+게 확인됐으므로, 이후 이 구조를 더 다듬는 방향(F temporal/team profile 등)은 계속 시도해볼 가치가
+있음 — 다만 로컬 두 폴드에만 과적합되지 않도록 매번 실제 제출로 재확인 권장.
+
 제출 패키지: `submit_segment_residual_corrector/submit.zip` — champion `.cbm` 그대로 재사용 +
 `build_correctors.py`가 오프라인으로 학습한 corrector(segment 3개×seed 3개=9개 ExtraTrees + 고정
 카테고리 인코딩 맵)를 `model/correctors.joblib`로 저장, `script.py`가 test.csv에 적용. 로컬 test.csv
 재현값 소수점까지 일치 확인, 245,789행 스트레스 테스트 약 2.3초(제한 10분). local 대표 점수(primary)
-**801.93**. 실제 LB 제출은 사용자 진행 예정.
+**801.93**, 실제 LB **879.7995048079**.
 
 ### 종합 (2026-08-12 업데이트: 실험 9.1로 결론 갱신)
 
