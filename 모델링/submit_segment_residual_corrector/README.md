@@ -4,9 +4,8 @@
 
 우리 확정 champion CatBoost(`submit/model/catboost_baseline.cbm`, raw 44피처, 2019~2024 전체 학습,
 실제 LB 789.23, **완전 독립개발**)를 그대로 base로 쓰고, base가 놓친 오차를 segment별로 ExtraTrees가
-따로 학습해서 보정하는 구조. V14 아키텍처의 일반적인 발상(base + segment residual correction)만
-참고했고, 구체적 구현(segment 기준, 하이퍼파라미터)은 전부 우리 자체 EDA/검증으로 새로 결정함 —
-다른참가자의 hybrid team 발견이나 구체적 수치는 재사용 안 함.
+따로 학습해서 보정하는 구조. base + segment residual correction이라는 큰 틀만 두고, 구체적 구현
+(segment 기준, 하이퍼파라미터)은 전부 우리 자체 EDA/검증으로 새로 결정함.
 
 ## segment 정의 (우리 자체 EDA 근거, `HANDOFF.md` "데이터 핵심 발견")
 

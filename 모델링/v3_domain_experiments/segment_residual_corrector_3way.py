@@ -1,7 +1,7 @@
 """
 segment_residual_corrector.py(R/F 2-way)를 3-way로 확장. 3번째 segment는 우리 자체 EDA로 이미
 확인한 발견을 근거로 함: team 13이 F 참여 비율 38.15%로 다른 정상 팀(3~10%)보다 유독 높음
-(HANDOFF.md "데이터 핵심 발견" 절 -- 이 세션 초반에 우리가 직접 찾은 것, 다른참가자 재사용 아님).
+(HANDOFF.md "데이터 핵심 발견" 절 -- 이 세션 초반에 독립적으로 찾은 것).
 
 segment 정의:
   dev  : game_type == 'F'

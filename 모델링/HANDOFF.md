@@ -502,8 +502,8 @@ pitcher-disjoint cross-fit(3 seed) 검증, 2023→2024/2022→2023 두 폴드:
 ### 실험 9.1 — 3-way segment로 확장 (`v3_domain_experiments/segment_residual_corrector_3way.py`) — ✅ 채택, 실험 9를 대체
 
 R/F 2-way보다 세밀하게 나누면 더 좋을지 확인. 3번째 segment는 우리 자체 EDA(HANDOFF.md "데이터 핵심
-발견")에서 이미 확인한 team 13의 F 참여 비율 이상치(38.15%, 다른 정상 팀은 3~10%)를 근거로 함 —
-다른참가자의 hybrid team 발견 재사용 아님, 우리가 이 세션 초반에 독립적으로 찾은 것.
+발견")에서 세션 초반에 독립적으로 찾은 team 13의 F 참여 비율 이상치(38.15%, 다른 정상 팀은 3~10%)를
+근거로 함.
 
 ```
 game_type=='F' → dev / game_type=='R' and team13 관여 → hybrid / 나머지 R → core
