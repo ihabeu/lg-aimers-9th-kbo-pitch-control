@@ -520,11 +520,23 @@ F 안에서 100% F전용 극소표본 팀(22/23/25, 6년 합쳐 2700행 정도)�
 시도(`segment_residual_corrector_4way.py`) — primary -3.10 / stress +1.30로 사실상 노이즈, **기각**
 (표본 부족으로 corrector가 안정적으로 학습 안 됨, B0의 B2.3 F팀그룹화 실패와 같은 패턴).
 
-**corrector 모델 종류도 XGBoost로 교체/블렌드 시도**(`segment_corrector_model_types.py`) — ExtraTrees
-801.93/755.63 대비 XGBoost 단독 446.64/438.03로 두 폴드 다 크게 나쁨, ET+XGB 블렌드도 704.15/678.69로
-ExtraTrees 단독보다 나쁨(XGB가 품질을 끌어내림). ET/XGB correction 상관은 0.79~0.81로 낮아서 다양성
-자체는 있지만 XGBoost 쪽 품질이 나빠서 소용없음. **기각, ExtraTrees 유지.** boosting(XGBoost)이 이런
-저신호 residual 타겟에는 과적합하기 쉽고, ExtraTrees의 랜덤 배깅이 더 강건한 것으로 해석.
+**corrector 모델 종류를 4개로 비교**(`segment_corrector_model_types.py`, `_2.py`): ExtraTrees(배깅,
+분할점까지 무작위) / RandomForest(배깅, bootstrap+최적분할) / XGBoost(부스팅) / LightGBM(부스팅,
+leaf-wise).
+
+| corrector | 2023→2024 | 2022→2023 |
+|---|---:|---:|
+| **ExtraTrees** | **801.93** | **755.63** |
+| RandomForest | 715.96 | 651.54 |
+| LightGBM | 607.96 | 610.03 |
+| XGBoost | 446.64 | 438.03 |
+| ET+RF 블렌드 | 777.60 | 733.10 |
+| ET+XGB 블렌드 | 704.15 | 678.69 |
+
+ExtraTrees가 두 폴드 다 압도적 1위, 블렌드도 전부 ExtraTrees 단독보다 나쁨(다른 모델들이 품질을
+끌어내림). **기각, ExtraTrees 유지가 최종.** 부스팅 계열(XGBoost/LightGBM)이 이런 저신호 residual
+타겟에는 과적합하기 쉽고, 배깅 계열이 더 강건함 — 그중에서도 분할점까지 무작위화하는 ExtraTrees가
+RandomForest보다도 나음.
 
 제출 패키지: `submit_segment_residual_corrector/submit.zip` — champion `.cbm` 그대로 재사용 +
 `build_correctors.py`가 오프라인으로 학습한 corrector(segment 3개×seed 3개=9개 ExtraTrees + 고정

@@ -1,0 +1,23 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+base BSS: 734.49
+  ExtraTrees corrected: 801.93 (gain +67.43)
+  RandomForest corrected: 715.96 (gain -18.53)
+  LightGBM corrected: 607.96 (gain -126.53)
+  ET+RF blend: 777.60 (gain +43.11)
+  corr(ET, RF): 0.9519
+  corr(ET, LGB): 0.8994
+
+===== STRESS: <2023 -> 2023 =====
+base BSS: 10.25
+  ExtraTrees corrected: 755.63 (gain +745.38)
+  RandomForest corrected: 651.54 (gain +641.29)
+  LightGBM corrected: 610.03 (gain +599.78)
+  ET+RF blend: 733.10 (gain +722.85)
+  corr(ET, RF): 0.9016
+  corr(ET, LGB): 0.8669
+
+요약:
+2023->2024: (np.float64(734.494427358634), {'ExtraTrees': np.float64(801.9291560629526), 'RandomForest': np.float64(715.9615932576413), 'LightGBM': np.float64(607.961519255984)})
+2022->2023: (np.float64(10.249155014097067), {'ExtraTrees': np.float64(755.6266020357527), 'RandomForest': np.float64(651.537227922061), 'LightGBM': np.float64(610.0327110014069)})
+(비교: ExtraTrees -- 2023->2024 801.93, 2022->2023 755.63)
