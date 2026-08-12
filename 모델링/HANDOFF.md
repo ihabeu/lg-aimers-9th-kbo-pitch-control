@@ -520,6 +520,12 @@ F 안에서 100% F전용 극소표본 팀(22/23/25, 6년 합쳐 2700행 정도)�
 시도(`segment_residual_corrector_4way.py`) — primary -3.10 / stress +1.30로 사실상 노이즈, **기각**
 (표본 부족으로 corrector가 안정적으로 학습 안 됨, B0의 B2.3 F팀그룹화 실패와 같은 패턴).
 
+**corrector 모델 종류도 XGBoost로 교체/블렌드 시도**(`segment_corrector_model_types.py`) — ExtraTrees
+801.93/755.63 대비 XGBoost 단독 446.64/438.03로 두 폴드 다 크게 나쁨, ET+XGB 블렌드도 704.15/678.69로
+ExtraTrees 단독보다 나쁨(XGB가 품질을 끌어내림). ET/XGB correction 상관은 0.79~0.81로 낮아서 다양성
+자체는 있지만 XGBoost 쪽 품질이 나빠서 소용없음. **기각, ExtraTrees 유지.** boosting(XGBoost)이 이런
+저신호 residual 타겟에는 과적합하기 쉽고, ExtraTrees의 랜덤 배깅이 더 강건한 것으로 해석.
+
 제출 패키지: `submit_segment_residual_corrector/submit.zip` — champion `.cbm` 그대로 재사용 +
 `build_correctors.py`가 오프라인으로 학습한 corrector(segment 3개×seed 3개=9개 ExtraTrees + 고정
 카테고리 인코딩 맵)를 `model/correctors.joblib`로 저장, `script.py`가 test.csv에 적용. 로컬 test.csv

@@ -1,0 +1,19 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+base BSS: 734.49
+  ExtraTrees corrected: 801.93 (gain +67.43)
+  XGBoost corrected:    446.64 (gain -287.85)
+  ET+XGB blend:         704.15 (gain -30.34)
+  corr(ET_correction, XGB_correction) on full consensus preds: 0.8089
+
+===== STRESS: <2023 -> 2023 =====
+base BSS: 10.25
+  ExtraTrees corrected: 755.63 (gain +745.38)
+  XGBoost corrected:    438.03 (gain +427.78)
+  ET+XGB blend:         678.69 (gain +668.44)
+  corr(ET_correction, XGB_correction) on full consensus preds: 0.7925
+
+요약 (base, ET, XGB, blend):
+2023->2024: (np.float64(734.494427358634), np.float64(801.9291560629526), np.float64(446.6410462822368), np.float64(704.1516972203232))
+2022->2023: (np.float64(10.249155014097067), np.float64(755.6266020357527), np.float64(438.0276837801289), np.float64(678.6886530361636))
+(비교: 3-way ExtraTrees corrected -- 2023->2024 801.93, 2022->2023 755.63)
