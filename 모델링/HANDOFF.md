@@ -548,6 +548,16 @@ shrink(보정 강도, 지금은 1.0=100%) 스윕에서는 뚜렷한 트레이드
 교훈을 그대로 적용해 한쪽 폴드에 치우친 값을 고르지 않고 shrink=1.0(무보정) 유지.** stress 폴드가
 "예상 못한 regime 변화 대응력"의 대리지표라 거길 희생하는 선택은 하지 않음.
 
+**corrector 입력에 base_pred(CatBoost 예측값) 피처 추가도 시도**(`segment_corrector_base_pred_feature.py`,
+V14도 쓰는 방식) — primary는 거의 그대로(801.93→801.95, 노이즈)인데 stress가 755.63→721.18로
+-34.45 악화. **기각.** corrector가 이미 원본 44피처(base가 쓰는 정보와 거의 동일)를 다 갖고 있어서
+base_pred는 중복 정보였고, regime shift 상황에서 오히려 일반화를 방해.
+
+**이 시점에서 판단**: segment 기준(3-way), corrector 모델 종류(4종+블렌드), capacity, shrink, 입력
+피처(base_pred) 전부 로컬 두 폴드로 검증 완료. 이 구조 위에서 시도해볼 만한 레버는 거의 소진 —
+계속 로컬로만 파면 V14 E007과 같은 로컬 과적합 위험. **실제 LB 제출로 이 아키텍처(local primary
+801.93) 자체가 진짜 개선인지 확인하는 게 다음 단계로 권장됨.**
+
 제출 패키지: `submit_segment_residual_corrector/submit.zip` — champion `.cbm` 그대로 재사용 +
 `build_correctors.py`가 오프라인으로 학습한 corrector(segment 3개×seed 3개=9개 ExtraTrees + 고정
 카테고리 인코딩 맵)를 `model/correctors.joblib`로 저장, `script.py`가 test.csv에 적용. 로컬 test.csv
