@@ -30,7 +30,7 @@ Phase2 수료 기준: Public LB 549.51 이상. 데이터 설명서는 [`data/dat
 | 7차 | CatBoost + recent_k_pitch_rate(스냅샷 고정) | 2019~2024 전체 | **252.51** (로컬 966.18과 완전히 다른 방향 — 원인 규명 후 폐기, 아래 상세 참고) |
 | 6차 | CatBoost + hand_matchup | 2019~2024 전체 | **787.40** (로컬 rolling OOT는 baseline 대비 +18.40/+21.06으로 확실히 개선이었는데 실제 LB는 오히려 -1.83 낮음 — local/actual 재괴리 사례. 제출 파이프라인 자체는 검증 완료: 모델 feature 순서/cat_features가 script.py와 완전 일치, in-sample 2024 재현 시 score=879.78·예측확률 분포 정상·hand_matchup 카테고리 4종 정상 생성 → 파이프라인 버그 아니라 진짜 2025 일반화 문제로 판단) |
 | 8차 (2026-08-12) | V14(recent shared base + 3-domain residual adapter, v1.1 튜닝) | 2024 시즌(base) + 2024 라벨(residual adapter) — recent-shared-base 철학 | 1032.0064496443 — **🚫 철회함(아래 "V14 철회" 절 참고). 외부 참고자료와의 유사성 문제로 부정 제출 위험 확인돼 철회. 유효 champion 아님.** |
-| 9차 (2026-08-13) | champion CatBoost(789.23, 완전 독립개발) + 3-way segment(core/hybrid/dev) residual corrector(ExtraTrees) | champion은 그대로, corrector만 오프라인 학습 — `submit/v9_segment_corrector/submit.zip` | **879.7995048079 (현재 최선, 유효 champion)** — 789.23 대비 +90.57. 로컬 primary(801.93)보다 실제가 더 높게 나옴(local/actual 정합). V14 코드 재사용 없이 완전 독립 개발, 아키텍처(base+segment residual correction)만 참고하고 구현/segment 기준/하이퍼파라미터는 전부 우리 자체 EDA·검증(`EXPERIMENTS.md` E001, 아래 "E008~E009"). |
+| 9차 (2026-08-13) | champion CatBoost(789.23, 완전 독립개발) + 3-way segment(core/hybrid/dev) residual corrector(ExtraTrees) | champion은 그대로, corrector만 오프라인 학습 — `submit/v9_segment_corrector/submit.zip` | **879.7995048079 (현재 최선, 유효 champion)** — 789.23 대비 +90.57. 로컬 primary(801.93)보다 실제가 더 높게 나옴(local/actual 정합). V14 코드 재사용 없이 완전 독립 개발, 아키텍처(base+segment residual correction)만 참고하고 구현/segment 기준/하이퍼파라미터는 전부 우리 자체 EDA·검증(`EXPERIMENTS.md` E013, 아래 "E019~E020"). |
 | 10차 (2026-08-13) | CatBoost(0.6)+LightGBM(0.2)+XGBoost(0.2) 가중 블렌드 + 3-way segment corrector | base 3모델 전부 2019~2024 전체 학습 — `submit/v10_multimodel_blend/submit.zip` | **869.7143690742 — 879.80 미달, 채택 안 함.** 로컬은 primary(815.15)/stress(833.05) 두 폴드 다 champion(801.93/755.63)을 이겼는데 실제는 오히려 -10.09 낮음 — **local/actual 재괴리 사례**(6차 hand_matchup과 같은 패턴). 유효 champion은 계속 879.80(9차). 원인 추정: LightGBM/XGBoost가 CatBoost보다 2025 일반화가 약해서, 로컬(2023/2024 검증)에서 잡히는 개선이 진짜 미래 데이터로는 전이가 약함 — 확정 아니고 가설. |
 
 **hand_matchup 최종 판정**: 제출 모델로는 채택 안 함(789.23 유지). 다만 "선수별 조건부 이력 정보"라는 가설 자체를 검증하려고 STEP 1(platoon feature) 4개를 독립적으로 테스트함 — A: pitcher_vs_current_batter_hand_rate 724.39(-10.10), B: batter_vs_current_pitcher_hand_rate 678.90(-55.59), C: pitcher_platoon_advantage 734.33(-0.16), D: batter_platoon_advantage 703.55(-30.94). 전부 baseline 미달로 **platoon 방향도 종료**. hand_matchup의 로컬 개선이 실제 LB로 이어지지 않은 것과 별개로, platoon 자체도 로컬에서부터 신호가 없었음(코드: [`platoon_features.py`](../modeling/platoon_features.py), [`platoon_ablation.py`](../modeling/platoon_ablation.py)).
@@ -53,7 +53,7 @@ V14 철회 이후 아이디어(base + segment residual correction 구조)만 참
 champion CatBoost(789.23) 모델 자체는 그대로 두고, segment(core/hybrid/dev, team 13 관여 여부로
 분리 — 이 세션에서 독립적으로 발견)별로 ExtraTrees residual corrector만 추가한 구조. 상세 검증
 과정(segment 3-way 확정, corrector 모델 종류 4종 비교, capacity/shrink 튜닝, base_pred 피처 기각)은
-아래 "E008~E009" 절과 `EXPERIMENTS.md` E001 참고. 코드는 V14/B0 계열을 전혀 재사용하지 않고
+아래 "E019~E020" 절과 `EXPERIMENTS.md` E013 참고. 코드는 V14/B0 계열을 전혀 재사용하지 않고
 `개발/v3_domain_experiments/segment_residual_corrector*.py`에 전부 독립적으로 작성됨.
 
 ## 🚫 2026-08-13 multimodel weighted blend corrector — 실제 LB 869.71, champion 미달로 기각
@@ -361,7 +361,7 @@ Elastic Net/NN 블렌딩도 단독 성능 격차가 너무 커서(385, 616) 시�
 
 ## 세션 실험 로그 (E-번호, `EXPERIMENTS.md`와 통합 순번)
 
-### E008 (2026-08-12) — game_type(R/F) segment residual corrector (`개발/v3_domain_experiments/segment_residual_corrector.py`) — ✅ 채택, 패키징 완료
+### E019 (2026-08-12) — game_type(R/F) segment residual corrector (`개발/v3_domain_experiments/segment_residual_corrector.py`) — ✅ 채택, 패키징 완료
 
 **이번 세션 신규 실험 중 유일하게 확실한 양의 결과.** champion CatBoost(789.23, 손대지 않음)를 base로
 그대로 두고, base의 오차(y - base예측)를 game_type(R/F) segment별로 ExtraTrees가 따로 학습해서 보정.
@@ -378,7 +378,7 @@ pitcher-disjoint cross-fit(3 seed) 검증, 2023→2024/2022→2023 두 폴드:
 
 두 폴드 다 크게, 같은 방향으로 개선. **채택.**
 
-### E009 (2026-08-12) — 3-way segment로 확장 (`개발/v3_domain_experiments/segment_residual_corrector_3way.py`) — ✅ 채택, E008를 대체
+### E020 (2026-08-12) — 3-way segment로 확장 (`개발/v3_domain_experiments/segment_residual_corrector_3way.py`) — ✅ 채택, E019를 대체
 
 R/F 2-way보다 세밀하게 나누면 더 좋을지 확인. 3번째 segment는 우리 자체 EDA(HANDOFF.md "데이터 핵심
 발견")에서 세션 초반에 독립적으로 찾은 team 13의 F 참여 비율 이상치(38.15%, 다른 정상 팀은 3~10%)를
@@ -437,7 +437,7 @@ base_pred는 중복 정보였고, regime shift 상황에서 오히려 일반화�
 계속 로컬로만 파면 V14 E007과 같은 로컬 과적합 위험. **실제 LB 제출로 이 아키텍처(local primary
 801.93) 자체가 진짜 개선인지 확인하는 게 다음 단계로 권장됨.**
 
-### E010 (2026-08-13) — F(dev) segment를 early/late로 추가 분리 (`segment_residual_corrector_f_temporal.py`)
+### E021 (2026-08-13) — F(dev) segment를 early/late로 추가 분리 (`segment_residual_corrector_f_temporal.py`)
 
 R_CORE/R_ANCHOR/F(우리 core/hybrid/dev) 3-way는 고정하고, F 안에서만 4월(early)/5월 이후(late)로
 한 번 더 나눠서 각각 별도 corrector를 붙이는 게 도움되는지 확인 — 예전에 이 시간 정보를 CatBoost
@@ -465,7 +465,7 @@ V14 때와 같은 좋은 패턴이지만 이번엔 완전 독립 개발이라 �
 재현값 소수점까지 일치 확인, 245,789행 스트레스 테스트 약 2.3초(제한 10분). local 대표 점수(primary)
 **801.93**, 실제 LB **879.7995048079**.
 
-### E011 (2026-08-13) — 능력×상황 조건부 피처 (hand/count/month), 879.80 이후 신규 탐색
+### E022 (2026-08-13) — 능력×상황 조건부 피처 (hand/count/month), 879.80 이후 신규 탐색
 
 corrector importance가 상황 정보(game_month/batter_hand/strikes_before) 위주라는 관찰에서 출발.
 투수별 EB-smoothed 조건부 성공률(pitcher×batter_hand, pitcher×count, pitcher×month, leak-safe)을
@@ -484,7 +484,7 @@ corrector 입력에 추가.
 0.9998~1.0000** — 사실상 같은 예측이라 블렌드로 "둘 다 개선"되는 지점 없음(alpha 스윕으로 확인,
 완전히 매끄러운 트레이드오프 곡선). **기각(둘 다 이겨야 채택 원칙 유지), 참고용으로만 기록.**
 
-### E012 (2026-08-13) — residual bias 스캔 (pitcher-disjoint cross-fit)
+### E023 (2026-08-13) — residual bias 스캔 (pitcher-disjoint cross-fit)
 
 현재 champion의 2024 cross-fit residual을 segment/pitcher_hand/batter_hand/month/dayofweek/
 base_state/inning 및 쌍별 조합으로 스캔. 표본 충분(n≥300)한 것 중 가장 뚜렷한 건
@@ -492,55 +492,55 @@ base_state/inning 및 쌍별 조합으로 스캔. 표본 충분(n≥300)한 것 
 hand_matchup과 동일 신호**(로컬은 좋았는데 실제 LB 하락 전례). 나머지 큰 bias(10월 +0.029, 12회
 연장 +0.043, 일요일 -0.020)는 전부 n<3000의 소표본 노이즈. **새로운 미탐색 신호 없음 확인.**
 
-### E013 (2026-08-13) — Trackman 과거 투수 프로필 12개, residual correlation 진단
+### E024 (2026-08-13) — Trackman 과거 투수 프로필 12개, residual correlation 진단
 
 `modeling/trackman_features.py`(우리 자체 매핑, 신뢰 332명/커버리지 61~66%)의 12개 피처 전부
 현재 champion residual과 상관관계 **거의 0**(-0.0038~+0.0027, n=163,649). 세션 초반 baseline
 위에서의 Trackman 실패(-31~-43)가 이번 구조에서도 독립 재확인됨. **Trackman historical profile
 계열은 완전 종료.**
 
-### E014 (2026-08-13) — 3-stage 구조(ability/situation 강제 분리) — 기각
+### E025 (2026-08-13) — 3-stage 구조(ability/situation 강제 분리) — 기각
 
 Stage1(선수 이력만) → Stage2(상황만으로 Stage1 잔차 설명) → Stage3(기존 segment corrector)로
 분리. 전체피처를 한 모델에 다 주는 기존 2-stage보다 두 폴드 다 나쁨(primary 801.93→780.00,
 stress 755.63→713.96). CatBoost가 스스로 찾는 능력×상황 교호작용을 인위적 분리가 오히려 방해.
 
-### E015 (2026-08-13) — recency weighting(season 지수감쇠) λ 9개 정밀 스윕 — 기각
+### E026 (2026-08-13) — recency weighting(season 지수감쇠) λ 9개 정밀 스윕 — 기각
 
 세션 초반 λ=0.5 단일 테스트(694.91, 기각)를 λ=0.05~1.0 9개 값으로 재확인. **모든 λ에서 λ=0(가중치
 없음)보다 나쁨** — primary 최선 대안(λ=0.5)도 -30.77, stress는 대부분 λ에서 0.00까지 하락.
 "오래된 데이터를 버리지 말 것"이 이번에도 강하게 재확인됨. recency weighting 트랙 완전 종료.
 
-### 종합 (2026-08-13, E011~E015 이후)
+### 종합 (2026-08-13, E022~E026 이후)
 
 879.80 champion 이후 시도한 5개 방향(조건부 능력 피처, residual bias 스캔, Trackman, 3-stage 구조, recency weighting) 중 확실한 개선은 없음. 조건부 능력 피처(hand+month)만 유일하게 "트레이드오프
 후보"로 남아있고 나머지 4개는 명확히 기각. `submit/v9_segment_corrector/submit.zip`(879.80)이
 계속 유효 champion.
 
-**E014 범위 명확화**: 기각된 건 "CatBoost가 스스로 찾는 능력×상황 교호작용을 인위적으로
+**E025 범위 명확화**: 기각된 건 "CatBoost가 스스로 찾는 능력×상황 교호작용을 인위적으로
 분해하는 3-stage"(Ability→Situation→Residual)만이다. "서로 다른 모델/정보원을 단계적으로 결합"하는
 구조 자체가 기각된 게 아님 — 다만 (a) 여러 tree/boosting 모델 블렌드는 이미 residual 상관관계
 0.998+(model_diversity, corrector 모델 종류 비교 둘 다)로 다양성이 거의 없었고,
-(b) Trackman을 새 정보원으로 쓰는 것도 E013에서 residual 상관관계 거의 0으로 막힘 — 그래서
+(b) Trackman을 새 정보원으로 쓰는 것도 E024에서 residual 상관관계 거의 0으로 막힘 — 그래서
 "다른 정보원 기반 3-stage" 자체가 유효하려면 먼저 residual diversity가 있는 모델/정보원을 찾아야
 한다는 게 현재까지의 결론.
 
-### E016 이후 — `EXPERIMENTS.md` 참고
+### E027 이후 — `EXPERIMENTS.md` 참고
 
-879.80 champion 이후의 실험(멀티모델 블렌드 E003, Diversity Lab E004~E006, calibration 진단
-E007)은 중복 방지를 위해 `EXPERIMENTS.md`에만 기록한다. 요지: 멀티모델 블렌드는 로컬 두 폴드 다
+879.80 champion 이후의 실험(멀티모델 블렌드 E014, Diversity Lab E015~E017, calibration 진단
+E018)은 중복 방지를 위해 `EXPERIMENTS.md`에만 기록한다. 요지: 멀티모델 블렌드는 로컬 두 폴드 다
 이겼지만 실제 LB(869.71)에서 champion(879.80)에 못 미쳐 기각 — 로컬 dual-fold 검증이 새 model
 family(특히 부스팅 계열 이종 블렌드)의 실제 2025 일반화까지는 보장 못 한다는 근거가 추가됨(6차
 hand_matchup과 함께 두 번째 확증). Ridge/Logistic/ElasticNet, MLP, LSTM 모두 champion을 넘어설
 신호를 못 찾음. calibration도 원인이 아님을 확인. 유효 champion은 계속 879.80.
 
-### 종합 (2026-08-12 업데이트: E009로 결론 갱신)
+### 종합 (2026-08-12 업데이트: E020로 결론 갱신)
 
 **raw 44피처 자체를 건드리는 방향(피처 추가/제거/제약)은 이 시점에서 사실상 소진됐다고 판단** —
 여러 방향(R-only, F 레짐필터, 계층형 EB, 레벨시프트 calibration, F 시즌내 온도차, monotone_constraints
 등)을 다 시도했지만 "이 44피처 안에서는 CatBoost+전체데이터가 실질적 상한"이라는 결론으로 수렴했다.
 
-**다만 E008/E009(champion + segment residual corrector)로 이 상한을 실제로 넘었다.** 핵심은
+**다만 E019/E020(champion + segment residual corrector)로 이 상한을 실제로 넘었다.** 핵심은
 피처를 더 추가하는 게 아니라 **base 모델은 그대로 두고 그 오차를 segment별로 별도 학습해서 보정**하는
 구조 변경이었다 — "feature 조정으로는 못 번다"는 위 결론과 모순되지 않는다(feature가 아니라 2단계
 구조를 바꾼 것). **`submit/v9_segment_corrector/submit.zip`(3-way, 로컬 primary 801.93,

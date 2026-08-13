@@ -1,0 +1,4 @@
+교호작용,관측 interaction_ss,null 평균,null sd,p-value
+투수손 x 타자손,0.000124,0.0,0.0,0.0
+season x 투수 통산성공률(5분위),0.000122,4e-06,1e-06,0.0
+game_type x season,0.0,0.0,0.0,0.355
