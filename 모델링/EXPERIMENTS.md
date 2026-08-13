@@ -194,3 +194,14 @@ E010 champion(879.80) 이후, model_diversity 실험에서 확인한 CatBoost/Li
 채택: weight(cat=0.6, lgb=0.2, xgb=0.2) — 로컬 primary 815.15(+13.22), stress 833.05(+77.42). LightGBM/XGBoost 하이퍼파라미터·가중치 그리드 전부 자체 설정. 상세는 `HANDOFF.md` "실험 15" 절 참고.
 
 **상태**: 배포 패키지 `submit_multimodel_blend_corrector/submit.zip` 빌드 완료, 로컬 sanity 확인. **실제 LB 제출 전 — 사용자 결정 대기.**
+
+---
+
+## E012 (2026-08-13) — Diversity Lab: Ridge/Logistic/ElasticNet residual correlation 진단 — 기각
+
+CatBoost/LightGBM/XGBoost 간 residual 상관관계(0.83~0.96, E011)보다 더 낮은 다양성을 기대하고, 완전히 다른 귀납적 편향(선형)인 Ridge(l2)/Logistic(규제없음)/ElasticNet을 `modeling/elastic_net.py`의 기존 전처리 파이프라인으로 테스트(`v3_domain_experiments/diversity_lab_linear.py`).
+
+PRIMARY(2023→2024): BSS≈336, corr(vs CatBoost)=0.718 — 트리 모델끼리보다 확실히 낮은 상관관계.
+STRESS(2022→2023): **BSS=0.00**, corr=0.104 — 상관관계는 더 낮지만 신호 자체가 없음(노이즈 수준).
+
+원인: `elastic_net.py`에 이미 기록된 game_type×season_regime 반전 때문에, stress fold 학습 데이터(<2023)엔 "post2023" 카테고리가 아예 없어서 선형모델이 이 구간을 완전 미지의 상태로 예측 — 낮은 상관관계가 "다양성"이 아니라 "신호 부재"에서 나온 것. **기각.** 블렌드 후보가 되려면 낮은 상관관계뿐 아니라 두 폴드 모두 최소한의 실질 신호(BSS)가 있어야 한다는 기준을 stress에서 탈락.
