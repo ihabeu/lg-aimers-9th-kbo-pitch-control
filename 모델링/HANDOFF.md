@@ -708,6 +708,12 @@ LightGBM/XGBoost 하이퍼파라미터·가중치 그리드 전부 자체 설정
 (script.py 출력이 build_artifacts.py의 최종 sanity 값과 정확히 일치). **실제 LB 제출은 아직 —
 사용자 결정 대기.**
 
+**2026-08-13 추가 — 첫 제출 시도 InstallError**: `xgboost==3.3.0`이 DACON 설치 환경 미러에 없어서
+설치 실패. `xgboost==2.1.4`/`lightgbm==4.5.0`(정착된 구버전)로 다운그레이드 후 그 버전으로 모델을
+재학습·재직렬화(joblib pickle은 xgboost/lightgbm 메이저 버전 간 호환 보장 안 됨 — 학습 버전과 설치
+버전을 맞춰야 함), submit.zip 재빌드 완료. 245,789행 실제 규모 추론 시간도 실측: **3.7초**(제한
+10분). 상세는 `submit_multimodel_blend_corrector/README.md`.
+
 ### 종합 (2026-08-12 업데이트: 실험 9.1로 결론 갱신)
 
 신규 실험 9개 중 7개(R-only, F 레짐필터, 계층형 EB 단독, 레벨시프트 calibration, model_diversity

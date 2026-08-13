@@ -52,6 +52,19 @@ python3 build_artifacts.py   # model/ 재생성 (train.csv 필요)
 zip -r submit.zip model script.py requirements.txt
 ```
 
+## 245,789행 추론 시간 실측
+
+train.csv에서 245,789행을 샘플링해 실제 규모로 재현 후 `script.py` 실행: **3.7초** (제한 10분).
+
+## ⚠️ 패키지 버전 이슈 (2026-08-13)
+
+첫 제출 시도에서 `InstallError: No matching distribution found for xgboost==3.3.0` 발생 — DACON
+채점 환경의 설치 단계(≤10분, 온라인)가 참조하는 미러에 그 버전이 아직 없는 것으로 추정(로컬 pip
+index에는 존재함, 최신 릴리스라 미러 반영 지연으로 판단). `xgboost==2.1.4`, `lightgbm==4.5.0`(둘 다
+오래 정착된 버전)로 다운그레이드하고 **그 버전으로 모델을 재학습·재직렬화**함(joblib pickle은
+xgboost/lightgbm 메이저 버전 간 호환을 보장 안 해서, 설치 버전과 학습 버전을 반드시 맞춰야 함).
+재학습 후 sanity(로컬 test.csv)로 `script.py` 출력이 `build_artifacts.py`와 다시 일치함을 확인.
+
 ## 상태
 
 **로컬 검증 완료, 실제 LB 제출 전.** [`lg_aimers_submit_zip_policy`] 원칙대로 두 폴드 모두 신기록이라

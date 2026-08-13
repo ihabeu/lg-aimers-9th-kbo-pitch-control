@@ -1,0 +1,15 @@
+최종 블렌드 학습 (2019~2024 전체, 실제 배포용)
+residual-source 블렌드 학습 (2019~2023 -> 2024, 배포에는 안 씀)
+residual-source 2024 BSS (sanity, multimodel_weighted_blend.py (.6,.2,.2) base=724.98와 같아야 함): 720.95
+segment 분포: {'core': 178729, 'hybrid': 44768, 'dev': 30010}
+  corrector fit segment=core seed=42 n=178729
+  corrector fit segment=hybrid seed=42 n=44768
+  corrector fit segment=dev seed=42 n=30010
+  corrector fit segment=core seed=2026 n=178729
+  corrector fit segment=hybrid seed=2026 n=44768
+  corrector fit segment=dev seed=2026 n=30010
+  corrector fit segment=core seed=314 n=178729
+  corrector fit segment=hybrid seed=314 n=44768
+  corrector fit segment=dev seed=314 n=30010
+SANITY (로컬 test.csv) base: [0.4537508  0.43727606 0.51036142 0.38973014 0.56051778] final: [0.44836559 0.43036427 0.50056116 0.38156718 0.55399882]
+saved: /Users/choehabin/Library/CloudStorage/OneDrive-개인/lg aimers/모델링/submit_multimodel_blend_corrector/model
