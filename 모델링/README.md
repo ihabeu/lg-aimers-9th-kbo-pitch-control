@@ -1,8 +1,23 @@
 # 데이터셋 개요
 
-**마지막 업데이트: 2026-08-09**
+**마지막 업데이트: 2026-08-14**
 
-모델링 들어가기 전에 이 데이터가 어떤 문제인지 정리한 문서. 상세 EDA는 [eda/EDA.md](eda/EDA.md), 컬럼별 설명·고유값·분류는 [eda/COLUMNS.md](eda/COLUMNS.md), 원본 컬럼 정의는 [../data/data_description.md](../data/data_description.md) 참고.
+모델링 들어가기 전에 이 데이터가 어떤 문제인지 정리한 문서.
+
+## 문서 안내 (처음 읽는 순서)
+
+| 문서 | 내용 |
+| --- | --- |
+| [`대회 목적 및 규칙.md`](대회%20목적%20및%20규칙.md) | 대회 배경, 문제 정의, 평가 지표, 제출 규정, leak 방지 규정 — 상세 |
+| [`도메인.md`](도메인.md) | 야구 규칙, 컬럼이 의미하는 것(이닝/카운트/주자/제구 등) — 상세 |
+| [`전처리 및 인사이트.md`](전처리%20및%20인사이트.md) | 데이터 특성, 중요 변수, 시즌 drift, team 13 발견, 모델별 전처리 차이 — 상세 |
+| 이 문서 (`README.md`) | 컬럼 구조 요약, 이 프로젝트에서 검증한 핵심 발견 |
+| [`eda/EDA.md`](eda/EDA.md) / [`eda/COLUMNS.md`](eda/COLUMNS.md) | EDA 산출물 원본, 컬럼별 고유값·분류표 |
+| [`EXPERIMENTS.md`](EXPERIMENTS.md) | 실험 로그(E-번호 순차 기록) |
+| [`HANDOFF.md`](HANDOFF.md) | 현재 champion, 제출 이력, 전체 진행 상태 |
+| [`INSIGHTS.md`](INSIGHTS.md) | 팀 공유용 핵심 인사이트 요약 |
+
+원본 컬럼 정의(운영진 제공)는 [`../data/data_description.md`](../data/data_description.md) 참고.
 
 ## 무엇을 예측하는가
 

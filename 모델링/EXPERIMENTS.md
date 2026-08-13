@@ -2,6 +2,8 @@
 
 **시작일: 2026-08-12** (각 실험 항목에도 날짜 표기)
 
+데이터 배경지식은 [`도메인.md`](도메인.md), [`전처리 및 인사이트.md`](전처리%20및%20인사이트.md) 참고. 진행 상태 요약은 [`HANDOFF.md`](HANDOFF.md).
+
 형식: 각 실험은 변경점, rolling OOT(2022/2023/2024, 가중치 0.2/0.3/0.5) 또는 single-split(2019-23→24), dual-fold(primary 2023→2024/stress 2022→2023) 결과, 채택/기각 여부를 남긴다.
 
 기준선: CatBoost baseline(raw 44피처, l2_leaf_reg=15) — 2019-23→24 single-split 734.49, rolling weighted 818.65. 실제 LB 789.23.
