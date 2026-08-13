@@ -1,6 +1,6 @@
 """
 오늘 멀티모델 블렌드(로컬 두 폴드 다 이겼는데 실제 LB는 champion보다 -10.09 낮음, E011)가
-calibration(과신/과소신) 문제였는지 진단. 참고 자료(다른참가자/LGAIMERS, model_test.md)에서
+calibration(과신/과소신) 문제였는지 진단. 참고 자료(다른 참가자 공개 레포, model_test.md)에서
 "blend 이후 calibration을 별도로 봐야 한다"는 방법론적 아이디어만 가져와 우리 데이터로 직접
 검증 -- 그쪽 코드/숫자는 안 씀.
 

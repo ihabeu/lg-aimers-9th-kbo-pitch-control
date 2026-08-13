@@ -26,7 +26,7 @@
 
 ## HistGradientBoosting / LightGBM (v2 실험, 진행 중)
 
-`다른참가자/LGAimers` 참고 — 이 팀은 CatBoost보다 HistGradientBoosting/LightGBM 조합을 주력으로 써서 저희보다 높은 점수(1081.68)를 냄. 전처리는:
+`다른 참가자 공개 레포` 참고 — 이 팀은 CatBoost보다 HistGradientBoosting/LightGBM 조합을 주력으로 써서 저희보다 높은 점수(1081.68)를 냄. 전처리는:
 
 - **범주형**: `OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)` — CatBoost의 target statistics와 다르게 단순 정수 인코딩.
 - **결측치**: `SimpleImputer(strategy="median")` (수치형), `most_frequent`(범주형, 인코딩 전).
