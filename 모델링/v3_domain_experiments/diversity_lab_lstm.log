@@ -1,0 +1,14 @@
+윈도우 빌드 중...
+seqs shape=(1475092, 10, 44) (2.60 GB)
+
+===== PRIMARY: <2024 -> 2024 =====
+    epoch 1: loss=0.69054
+    epoch 2: loss=0.68996
+    epoch 3: loss=0.68979
+  LSTM(window=10): BSS=0.00  corr(vs CatBoost)=-0.0803
+
+===== STRESS: <2023 -> 2023 =====
+    epoch 1: loss=0.68943
+    epoch 2: loss=0.68854
+    epoch 3: loss=0.68845
+  LSTM(window=10): BSS=0.00  corr(vs CatBoost)=0.4757

@@ -209,3 +209,17 @@ STRESS(2022→2023): **BSS=0.00**, corr=0.104 — 상관관계는 더 낮지만 
 ## E011 실제 제출 결과 (2026-08-13) — champion 미달로 기각
 
 실제 Public LB **869.7143690742** — 기존 champion(879.80) 미달, **-10.09**. 로컬은 primary(815.15)/stress(833.05) 두 폴드 다 champion(801.93/755.63)을 이겼는데 실제는 오히려 낮음 — local/actual 재괴리 사례(6차 hand_matchup과 같은 패턴). **유효 champion은 계속 879.80(`submit_segment_residual_corrector/submit.zip`), 이 멀티모델 블렌드는 기각.**
+
+---
+
+## E013 (2026-08-13) — Diversity Lab: MLP — 참고용 보류
+
+`v3_domain_experiments/diversity_lab_mlp.py`, 은닉층(64,32) MLP. PRIMARY: BSS=441.11, corr(vs CatBoost)=0.7509. STRESS: BSS=0.00, corr=0.2160.
+
+재해석: multimodel_base_ensemble.log 확인 결과 CatBoost 단독도 STRESS에서 10.25(corrector 없이)로 사실상 붕괴 — stress 폴드는 corrector 없이는 모든 base 모델이 거의 무너지는 구간이라, MLP만의 결함이 아님. 다만 표준 정확도(441)가 트리(734)보다 크게 낮아 블렌드 후보로는 매력 낮음. **보류, 우선순위 낮음.**
+
+## E014 (2026-08-13) — Diversity Lab: LSTM(투구 시퀀스, window=10) — 학습 미흡, 결론 보류
+
+`v3_domain_experiments/diversity_lab_lstm.py`. row_id 기준 투수별 과거 10개 투구 시퀀스로 many-to-one 예측. PRIMARY/STRESS 둘 다 BSS=0.00, corr(vs CatBoost) -0.08/0.48. loss가 3 epoch 동안 ln(2)=0.693 근처에서 거의 안 움직여 사실상 학습이 안 됨.
+
+**신호가 없다는 결론이 아니라 "이 정도 투자(3 epoch, hidden=64)로는 학습이 안 됐다"는 것** — 시퀀스 자체에 신호가 없는지, 더 학습시켜야 나오는지 미확정. 추가 투자 대비 기대값 낮아 우선순위 낮게 보류.

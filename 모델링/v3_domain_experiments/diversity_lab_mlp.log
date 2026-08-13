@@ -1,0 +1,14 @@
+/opt/anaconda3/lib/python3.13/site-packages/sklearn/preprocessing/_encoders.py:246: UserWarning: Found unknown categories in columns [7, 8] during transform. These unknown categories will be encoded as all zeros
+  warnings.warn(
+/opt/anaconda3/lib/python3.13/site-packages/sklearn/preprocessing/_encoders.py:246: UserWarning: Found unknown categories in columns [7, 8] during transform. These unknown categories will be encoded as all zeros
+  warnings.warn(
+/opt/anaconda3/lib/python3.13/site-packages/sklearn/preprocessing/_encoders.py:246: UserWarning: Found unknown categories in columns [11] during transform. These unknown categories will be encoded as all zeros
+  warnings.warn(
+/opt/anaconda3/lib/python3.13/site-packages/sklearn/preprocessing/_encoders.py:246: UserWarning: Found unknown categories in columns [11] during transform. These unknown categories will be encoded as all zeros
+  warnings.warn(
+
+===== PRIMARY: <2024 -> 2024 =====
+  MLP(64, 32): BSS=441.11  AUC=0.539  corr(vs CatBoost)=0.7509  iters=10
+
+===== STRESS: <2023 -> 2023 =====
+  MLP(64, 32): BSS=0.00  AUC=0.5052  corr(vs CatBoost)=0.2160  iters=23
