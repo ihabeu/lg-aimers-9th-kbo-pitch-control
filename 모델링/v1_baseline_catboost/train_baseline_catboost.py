@@ -5,7 +5,7 @@ CatBoost 베이스라인 + 중복 변수 제거 + rolling OOT 검증.
 범주형(내부적으로 결측을 하나의 카테고리로 처리)을 둘 다 네이티브로 처리하기 때문.
 
 검증은 rolling out-of-time: 2019-21→22, 2019-22→23, 2019-23→24 세 폴드를 0.2/0.3/0.5로 가중평균한다
-(동일한 가중치). 단일 폴드(2024만)로는 검증 모델과 제출 모델(전체 데이터
+단일 폴드(2024만)로는 검증 모델과 제출 모델(전체 데이터
 재학습)이 서로 다른 데이터로 학습돼서 로컬 점수를 못 믿는 문제가 있었는데, rolling 평균은 그 문제를 줄여준다.
 
 regime 파생 피처(is_extra_inning 등 4개), recency weighting, 완전 중복 변수 제거(run_total_before 등)
@@ -156,7 +156,7 @@ def rolling_oot_evaluate(df: pd.DataFrame, folds: list[tuple[int, float]] = ROLL
     """폴드별로 (그 이전 연도 전부로 학습 → 해당 연도 검증) 하고 가중평균.
 
     주의: 폴드마다 조기종료를 독립적으로 시키면 2023 폴드가 무너진다 — game_type=F의 성공률이
-    2019~2022엔 높다가 2023에 정확히 반전되는데(EDA2.ipynb에서 직접 확인, 이전 실험도 문서화한 현상),
+    2019~2022엔 높다가 2023에 정확히 반전되는데(EDA2.ipynb에서 직접 확인),
     2019~2022 데이터만으로 학습한 모델은 이 반전을 예측할 근거가 전혀 없다(out-of-distribution).
     그래서 이 함수는 진단용으로만 쓰고, 실제 비교는 rolling_oot_evaluate_fixed()로 한다.
     """
@@ -239,7 +239,7 @@ def main() -> None:
     df = load("train.csv")
     print(f"피처 {len(FEATURES)}개, 그중 범주형 {len(CAT_FEATURES)}개")
 
-    # 1) 2024를 주 기준(이전 실험도 가중치 50%로 가장 신뢰)으로 조기종료 라운드 수를 정한다.
+    # 1) 2024를 주 기준(가장 최신 시즌이라 가장 신뢰)으로 조기종료 라운드 수를 정한다.
     train_df, valid_df = time_split(df, VALID_SEASON)
     primary_model = train_catboost(train_df, valid_df)
     best_iteration = primary_model.get_best_iteration() + 1

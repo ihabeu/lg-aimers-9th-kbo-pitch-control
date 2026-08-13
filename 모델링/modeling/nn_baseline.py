@@ -43,7 +43,7 @@ def time_split(df, valid_season=2024):
     return df[df["season"] < valid_season], df[df["season"] == valid_season]
 
 
-# rolling out-of-time 폴드: (검증 연도, 가중치). baseline_catboost.py와 동일 기준(이전 실험 방식).
+# rolling out-of-time 폴드: (검증 연도, 가중치). baseline_catboost.py와 동일 기준.
 ROLLING_FOLDS = [(2022, 0.2), (2023, 0.3), (2024, 0.5)]
 
 

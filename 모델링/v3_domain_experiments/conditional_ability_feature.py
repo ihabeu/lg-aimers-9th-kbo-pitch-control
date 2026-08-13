@@ -6,7 +6,7 @@ strikes_before/game_month이 상위였던 것에 근거 -- 단순 hand_matchup(�
 
 leak-safe: target_season 이전 데이터로만 계산(2024 검증이면 <=2023 누적).
 EB smoothing: (성공 + k*prior) / (n + k) 로 표본 적을 때 league prior 쪽으로 당김 (k=count 계열
-regularization, "실력 × 표본 신뢰도"를 하나로 합치는 표준 통계 기법 -- 다른 참가자 특정 코드 아님).
+regularization, "실력 × 표본 신뢰도"를 하나로 합치는 표준 통계 기법).
 
 corrector 입력 피처로 추가(base_pred 실험처럼 base가 아니라 corrector에 넣는다 -- 이 세션에서
 "구조/corrector 변경은 통하고 base feature 추가는 자주 실패"했던 패턴을 따름).

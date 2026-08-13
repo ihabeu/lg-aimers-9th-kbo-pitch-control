@@ -44,7 +44,7 @@ REDUNDANT_DROP = ["run_total_before", "num_runners_on", "away_win_expectancy"]
 # game_type의 효과가 2023을 기점으로 부호 자체가 뒤집힌다(EDA2.ipynb) — 선형모델은 변수 하나에
 # 계수 하나뿐이라 이 반전을 표현 못 한다. game_type을 단독으로 넣는 대신, season_regime과 합친
 # 조합 카테고리로 바꿔서 "R_pre2023"/"R_post2023"/"F_pre2023"/"F_post2023" 4개 값 중 하나로 넣는다
-# (이전 실험이 실제 효과를 봤던 E4 방식과 동일한 발상 — 따로 두 피처로 넣는 것과 다르다).
+# (따로 두 피처로 넣는 것과 다르다).
 NUMERIC_FEATURES = [c for c in TRAIN_TEST_NUMERIC + TIME_SERIES_NUMERIC if c not in REDUNDANT_DROP]
 CATEGORICAL_FEATURES = [c for c in (TRAIN_TEST_BINARY + TRAIN_TEST_CATEGORICAL + TIME_SERIES_CATEGORICAL) if c != "game_type"] + ["game_type_regime"]
 MISSING_FLAGS = ["is_pitcher_coldstart", "is_batter_coldstart", "is_missing_recent_games"]

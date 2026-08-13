@@ -24,12 +24,4 @@
 - **범주형 인코딩**: 원-핫이 아니라 embedding(정수 인덱스 매핑, train 카테고리만으로 fit).
 - **스케일링**: 수치형만 `StandardScaler`.
 
-## HistGradientBoosting / LightGBM (v2 실험, 진행 중)
-
-`다른 참가자 공개 레포` 참고 — 이 팀은 CatBoost보다 HistGradientBoosting/LightGBM 조합을 주력으로 써서 저희보다 높은 점수(1081.68)를 냄. 전처리는:
-
-- **범주형**: `OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)` — CatBoost의 target statistics와 다르게 단순 정수 인코딩.
-- **결측치**: `SimpleImputer(strategy="median")` (수치형), `most_frequent`(범주형, 인코딩 전).
-- **pitcher_id/batter_id도 categorical로 그대로 포함** — 저희가 raw ID 넣으면 대참사(-166.65)라고 결론냈던 것과 반대라 검증 필요.
-
 자세한 실험은 [`../EXPERIMENTS.md`](../EXPERIMENTS.md) 참고.
