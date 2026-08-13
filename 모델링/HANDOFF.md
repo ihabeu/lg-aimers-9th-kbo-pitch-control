@@ -719,6 +719,55 @@ LightGBM/XGBoost 하이퍼파라미터·가중치 그리드 전부 자체 설정
 버전을 맞춰야 함), submit.zip 재빌드 완료. 245,789행 실제 규모 추론 시간도 실측: **3.7초**(제한
 10분). 상세는 `submit_multimodel_blend_corrector/README.md`.
 
+**🚫 실제 LB 결과(10차 제출): 869.7143690742 — 879.80 미달, 기각.** 로컬 두 폴드 다 이겼는데 실제는
+-10.09 낮음(local/actual 재괴리, 6차 hand_matchup과 같은 패턴). 유효 champion은 계속 879.80.
+
+### 실험 16 — Diversity Lab: Ridge/Logistic/ElasticNet, MLP, LSTM
+
+879.80 champion 대비 다른 구조로 CatBoost와 residual 다양성이 있으면서 실질적 신호도 있는 후보를
+찾는 탐색(`v3_domain_experiments/diversity_lab_linear.py`, `diversity_lab_mlp.py`,
+`diversity_lab_lstm.py`).
+
+| 모델 | primary BSS | primary corr(vs CatBoost) | stress BSS | stress corr |
+|---|---:|---:|---:|---:|
+| Ridge/Logistic/ElasticNet | ≈336 | 0.718 | **0.00** | 0.104 |
+| MLP(64,32) | 441.11 | 0.751 | 0.00 | 0.216 |
+| LSTM(window=10) | 0.00 | -0.080 | 0.00 | 0.476 |
+
+- **선형모델**: stress에서 BSS=0.00으로 완전 붕괴. `elastic_net.py`에 이미 기록된 game_type×season
+  regime 반전 때문에 stress 학습 데이터(<2023)엔 "post2023" 카테고리가 아예 없어 선형모델이 이 구간을
+  완전히 못 봄 — 낮은 상관관계가 다양성이 아니라 신호 부재. **기각.**
+- **MLP**: primary는 트리보다 약하지만(441 vs 734) 신호는 있음. stress=0.00은 MLP만의 문제가 아니라
+  재확인 결과 **CatBoost 단독도 corrector 없이는 stress에서 10.25**로 사실상 붕괴 — corrector 없는
+  raw base 모델은 이 폴드에서 전부 극단적으로 어렵다. 다만 표준 정확도 자체가 낮아 블렌드 후보로는
+  매력 낮음. **보류.**
+- **LSTM**: 투수별 과거 10개 투구를 row_id 실제 시간순으로 묶은 시퀀스, many-to-one 예측. 두 폴드
+  다 BSS=0.00 — loss가 3 epoch 동안 거의 안 움직여 학습 자체가 미흡했음(과적합/신호부재가 아니라
+  투자 부족). **결론 보류, 우선순위 낮음.**
+
+### 실험 17 — calibration 진단: 실험 15 실패는 calibration 문제가 아님
+
+`다른참가자/LGAIMERS`(병합 예정 팀원, 공식 병합 전이라 아이디어만 차용 — 코드/숫자는 안 씀) 자료의
+"blend 후 calibration을 별도로 봐야 한다"는 방법론 아이디어를 우리 데이터로 직접 검증
+(`calibration_diagnostic.py`). champion과 실험 15 블렌드의 corrector 적용 후 최종 예측 bias/slope:
+
+| | PRIMARY bias | PRIMARY slope | STRESS bias | STRESS slope |
+|---|---:|---:|---:|---:|
+| champion | -0.00069 | 1.0111 | -0.00132 | 1.2393 |
+| 실험 15 블렌드 | -0.00058 | 1.0060 | -0.00044 | 1.1592 |
+
+두 폴드 모두 블렌드가 champion과 비슷하거나 오히려 더 잘 보정됨. **calibration은 실험 15 실패의
+원인이 아니다** — post-hoc 보정으로 되살릴 수 있는 문제가 아니고, LightGBM/XGBoost 자체의 2025
+일반화가 약하다는 구조적 가설에 더 무게가 실림.
+
+### 종합 (2026-08-13, 실험 15~17 이후)
+
+879.80 이후 시도한 3개 방향(멀티모델 블렌드, Diversity Lab 3종, calibration 진단) 중 실제로 확인된
+개선은 없음. 멀티모델 블렌드는 로컬에서만 이기고 실제 LB에서 짐 — **로컬 dual-fold 검증이 새 model
+family(특히 부스팅 계열 이종 블렌드)의 실제 2025 일반화까지는 보장 못 한다**는 근거가 추가됨(기존
+6차 hand_matchup 사례와 함께 두 번째 확증). 선형/MLP/LSTM 모두 champion을 넘어설 신호를 못 찾음.
+유효 champion은 계속 879.80(`submit_segment_residual_corrector/submit.zip`).
+
 ### 종합 (2026-08-12 업데이트: 실험 9.1로 결론 갱신)
 
 신규 실험 9개 중 7개(R-only, F 레짐필터, 계층형 EB 단독, 레벨시프트 calibration, model_diversity

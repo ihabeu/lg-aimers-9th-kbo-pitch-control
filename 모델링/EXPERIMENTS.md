@@ -223,3 +223,16 @@ STRESS(2022→2023): **BSS=0.00**, corr=0.104 — 상관관계는 더 낮지만 
 `v3_domain_experiments/diversity_lab_lstm.py`. row_id 기준 투수별 과거 10개 투구 시퀀스로 many-to-one 예측. PRIMARY/STRESS 둘 다 BSS=0.00, corr(vs CatBoost) -0.08/0.48. loss가 3 epoch 동안 ln(2)=0.693 근처에서 거의 안 움직여 사실상 학습이 안 됨.
 
 **신호가 없다는 결론이 아니라 "이 정도 투자(3 epoch, hidden=64)로는 학습이 안 됐다"는 것** — 시퀀스 자체에 신호가 없는지, 더 학습시켜야 나오는지 미확정. 추가 투자 대비 기대값 낮아 우선순위 낮게 보류.
+
+---
+
+## E015 (2026-08-13) — calibration 진단: 오늘 블렌드 실패는 calibration 문제가 아님
+
+E011(멀티모델 블렌드, 로컬 두 폴드 다 이겼는데 실제 LB -10.09)이 과신/과소신(calibration) 문제였는지 진단(`calibration_diagnostic.py`). champion(CatBoost단독)과 기각된 블렌드(0.6/0.2/0.2)의 corrector 적용 후 최종 예측 bias/slope 비교:
+
+| | PRIMARY bias | PRIMARY slope | STRESS bias | STRESS slope |
+|---|---:|---:|---:|---:|
+| champion | -0.00069 | 1.0111 | -0.00132 | 1.2393 |
+| 기각된 블렌드 | -0.00058 | 1.0060 | -0.00044 | 1.1592 |
+
+두 폴드 모두 블렌드가 champion과 비슷하거나 오히려 더 잘 보정됨(slope가 1에 더 가까움, bias 더 작음). **calibration은 오늘 실패의 원인이 아니다** — post-hoc compression 보정으로 되살릴 수 있는 문제가 아니고, LightGBM/XGBoost 자체의 2025 일반화가 약하다는 구조적 가설에 더 무게가 실림. calibration 보정 방향은 이 실패를 설명/구제하지 못하므로 종료.

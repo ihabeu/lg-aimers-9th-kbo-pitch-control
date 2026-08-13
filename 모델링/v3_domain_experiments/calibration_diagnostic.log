@@ -1,0 +1,16 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  champion(CatBoost단독)
+    base(corrector 전):  score=734.49  bias=+0.00782  slope=1.0892
+    +corrector(최종):    score=801.93  bias=-0.00069  slope=1.0111
+  기각된 블렌드(0.6/0.2/0.2)
+    base(corrector 전):  score=724.93  bias=+0.00944  slope=1.0813
+    +corrector(최종):    score=812.14  bias=-0.00058  slope=1.0060
+
+===== STRESS: <2023 -> 2023 =====
+  champion(CatBoost단독)
+    base(corrector 전):  score=10.25  bias=+0.00253  slope=0.9053
+    +corrector(최종):    score=755.63  bias=-0.00132  slope=1.2393
+  기각된 블렌드(0.6/0.2/0.2)
+    base(corrector 전):  score=0.00  bias=+0.00970  slope=0.3405
+    +corrector(최종):    score=832.68  bias=-0.00044  slope=1.1592
