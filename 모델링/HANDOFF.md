@@ -29,6 +29,7 @@ Phase2 수료 기준: Public LB 549.51 이상. 데이터 설명서는 [`data/dat
 | 6차 | CatBoost + hand_matchup | 2019~2024 전체 | **787.40** (로컬 rolling OOT는 baseline 대비 +18.40/+21.06으로 확실히 개선이었는데 실제 LB는 오히려 -1.83 낮음 — local/actual 재괴리 사례. 제출 파이프라인 자체는 검증 완료: 모델 feature 순서/cat_features가 script.py와 완전 일치, in-sample 2024 재현 시 score=879.78·예측확률 분포 정상·hand_matchup 카테고리 4종 정상 생성 → 파이프라인 버그 아니라 진짜 2025 일반화 문제로 판단) |
 | 8차 (2026-08-12) | V14(recent shared base + 3-domain residual adapter, v1.1 튜닝) | 2024 시즌(base) + 2024 라벨(residual adapter) — recent-shared-base 철학 | 1032.0064496443 — **🚫 철회함(아래 "V14 철회" 절 참고). 다른 참가자(다른참가자)의 실제 노트북을 그대로 재현한 것으로 확인돼 부정 제출 위험. 유효 champion 아님.** |
 | 9차 (2026-08-13) | champion CatBoost(789.23, 완전 독립개발) + 3-way segment(core/hybrid/dev) residual corrector(ExtraTrees) | champion은 그대로, corrector만 오프라인 학습 — `submit_segment_residual_corrector/submit.zip` | **879.7995048079 (현재 최선, 유효 champion)** — 789.23 대비 +90.57. 로컬 primary(801.93)보다 실제가 더 높게 나옴(local/actual 정합). V14 코드 재사용 없이 완전 독립 개발, 아키텍처(base+segment residual correction)만 참고하고 구현/segment 기준/하이퍼파라미터는 전부 우리 자체 EDA·검증(`EXPERIMENTS.md` E010, 아래 "실험 9~9.2"). |
+| 10차 (2026-08-13) | CatBoost(0.6)+LightGBM(0.2)+XGBoost(0.2) 가중 블렌드 + 3-way segment corrector | base 3모델 전부 2019~2024 전체 학습 — `submit_multimodel_blend_corrector/submit.zip` | **869.7143690742 — 879.80 미달, 채택 안 함.** 로컬은 primary(815.15)/stress(833.05) 두 폴드 다 champion(801.93/755.63)을 이겼는데 실제는 오히려 -10.09 낮음 — **local/actual 재괴리 사례**(6차 hand_matchup과 같은 패턴). 유효 champion은 계속 879.80(9차). 원인 추정: LightGBM/XGBoost가 CatBoost보다 2025 일반화가 약해서, 로컬(2023/2024 검증)에서 잡히는 개선이 진짜 미래 데이터로는 전이가 약함 — 확정 아니고 가설. |
 
 **hand_matchup 최종 판정**: 제출 모델로는 채택 안 함(789.23 유지). 다만 "선수별 조건부 이력 정보"라는 가설 자체를 검증하려고 STEP 1(platoon feature) 4개를 독립적으로 테스트함 — A: pitcher_vs_current_batter_hand_rate 724.39(-10.10), B: batter_vs_current_pitcher_hand_rate 678.90(-55.59), C: pitcher_platoon_advantage 734.33(-0.16), D: batter_platoon_advantage 703.55(-30.94). 전부 baseline 미달로 **platoon 방향도 종료**. hand_matchup의 로컬 개선이 실제 LB로 이어지지 않은 것과 별개로, platoon 자체도 로컬에서부터 신호가 없었음(코드: [`platoon_features.py`](modeling/platoon_features.py), [`platoon_ablation.py`](modeling/platoon_ablation.py)).
 
@@ -63,7 +64,7 @@ champion CatBoost(789.23) 모델 자체는 그대로 두고, segment(core/hybrid
 아래 "실험 9 ~ 9.2" 절과 `EXPERIMENTS.md` E010 참고. 코드는 V14/B0 계열을 전혀 재사용하지 않고
 `v3_domain_experiments/segment_residual_corrector*.py`에 전부 독립적으로 작성됨.
 
-## 🟡 2026-08-13 새 후보 — multimodel weighted blend corrector (로컬 검증 완료, 실제 제출 대기)
+## 🚫 2026-08-13 multimodel weighted blend corrector — 실제 LB 869.71, champion 미달로 기각
 
 879.80 champion 이후, base 단계를 CatBoost 단독에서 **CatBoost+LightGBM+XGBoost 가중 블렌드
 (weight=0.6/0.2/0.2)**로 바꾸고 그 위에 기존과 동일한 3-way segment ExtraTrees corrector를
@@ -79,8 +80,12 @@ champion CatBoost(789.23) 모델 자체는 그대로 두고, segment(core/hybrid
 
 LightGBM/XGBoost 하이퍼파라미터·가중치 그리드 전부 자체 설정(외부 재사용 없음). 배포 패키지는
 `submit_multimodel_blend_corrector/submit.zip` — 로컬 test.csv sanity로 build_artifacts.py와
-script.py 출력이 정확히 일치함을 확인함. **아직 실제 LB 제출 전 — 이 문서의 "유효 champion"은
-여전히 879.80(9차 제출)이고, 이 후보는 사용자가 제출 여부를 결정할 때까지 후보 상태로 둔다.**
+script.py 출력이 정확히 일치함을 확인함.
+
+**실제 제출 결과(10차, 2026-08-13): 869.7143690742 — 879.80 미달.** 로컬 두 폴드 모두 이겼는데
+실제는 -10.09 낮은 **local/actual 재괴리 사례**(6차 hand_matchup과 같은 패턴 — 로컬 rolling OOT가
+2025 일반화를 완벽히 대변하지 못함). **유효 champion은 계속 879.80(9차, `submit_segment_residual_
+corrector/submit.zip`)이고, 이 멀티모델 블렌드는 기각한다.**
 
 ## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80이 최신
 

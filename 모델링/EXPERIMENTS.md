@@ -205,3 +205,7 @@ PRIMARY(2023→2024): BSS≈336, corr(vs CatBoost)=0.718 — 트리 모델끼리
 STRESS(2022→2023): **BSS=0.00**, corr=0.104 — 상관관계는 더 낮지만 신호 자체가 없음(노이즈 수준).
 
 원인: `elastic_net.py`에 이미 기록된 game_type×season_regime 반전 때문에, stress fold 학습 데이터(<2023)엔 "post2023" 카테고리가 아예 없어서 선형모델이 이 구간을 완전 미지의 상태로 예측 — 낮은 상관관계가 "다양성"이 아니라 "신호 부재"에서 나온 것. **기각.** 블렌드 후보가 되려면 낮은 상관관계뿐 아니라 두 폴드 모두 최소한의 실질 신호(BSS)가 있어야 한다는 기준을 stress에서 탈락.
+
+## E011 실제 제출 결과 (2026-08-13) — champion 미달로 기각
+
+실제 Public LB **869.7143690742** — 기존 champion(879.80) 미달, **-10.09**. 로컬은 primary(815.15)/stress(833.05) 두 폴드 다 champion(801.93/755.63)을 이겼는데 실제는 오히려 낮음 — local/actual 재괴리 사례(6차 hand_matchup과 같은 패턴). **유효 champion은 계속 879.80(`submit_segment_residual_corrector/submit.zip`), 이 멀티모델 블렌드는 기각.**
