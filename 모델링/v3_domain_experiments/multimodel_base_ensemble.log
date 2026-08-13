@@ -1,0 +1,22 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  CatBoost 단독: 734.49
+  LightGBM 단독: 592.54
+  XGBoost 단독: 518.59
+  corr(cat,lgb)=0.8784  corr(cat,xgb)=0.8318  corr(lgb,xgb)=0.8991
+  3-model 균등 블렌드: 685.27
+  CatBoost단독+corrector(기존 champion): 801.93
+  3-model블렌드+corrector: 797.36 (차이 -4.57)
+
+===== STRESS: <2023 -> 2023 =====
+  CatBoost 단독: 10.25
+  LightGBM 단독: 0.00
+  XGBoost 단독: 0.00
+  corr(cat,lgb)=0.9038  corr(cat,xgb)=0.8688  corr(lgb,xgb)=0.9592
+  3-model 균등 블렌드: 0.00
+  CatBoost단독+corrector(기존 champion): 755.63
+  3-model블렌드+corrector: 841.23 (차이 +85.61)
+
+요약 (champion, 3-model blend+corrector):
+2023->2024: (801.9291560629526, 797.3597592286108)
+2022->2023: (755.6266020357527, 841.2323114693088)

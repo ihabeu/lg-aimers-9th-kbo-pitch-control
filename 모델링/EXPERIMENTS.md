@@ -184,3 +184,13 @@ E009의 인사이트(base+segment residual correction 구조, F 팀 이질성, c
 로컬 primary 기준: base 734.49 → 3-way segment + ExtraTrees corrector **801.93**. corrector 모델 종류(ExtraTrees/RandomForest/XGBoost/LightGBM), segment 세분화(2/3/4-way), capacity, shrink, corrector 입력 피처(base_pred)까지 전부 로컬 dual-fold(2023→2024 primary, 2022→2023 stress)로 검증.
 
 **상세 실험 로그(9개)는 `HANDOFF.md`의 "실험 9 ~ 9.2" 절에 있음 — 중복 방지를 위해 여기서는 안 옮기고 링크만 남김.** 제출 패키지: `submit_segment_residual_corrector/submit.zip`. **상태**: 실제 LB **879.7995048079** — 새 유효 champion(789.23 대비 +90.57, 완전 독립개발). 로컬(801.93)보다 실제가 더 높게 나옴.
+
+---
+
+## E011 (2026-08-13) — 멀티모델(CatBoost+LightGBM+XGBoost) 가중 블렌드 base + 기존 corrector
+
+E010 champion(879.80) 이후, model_diversity 실험에서 확인한 CatBoost/LightGBM/XGBoost 간 residual 상관관계(0.83~0.96, 같은 계열 모델끼리의 0.998+보다 낮음)를 근거로 base 단계 자체를 3-model 블렌드로 바꾸는 실험. `v3_domain_experiments/multimodel_base_ensemble.py`(균등 1/3 가중)로 먼저 검증: primary -4.57 / stress +85.61 — stress 대폭 개선인데 primary만 손해. `multimodel_weighted_blend.py`로 CatBoost 비중을 높인 7개 가중치 스윕한 결과 (0.8~0.4, .1~.3, .1~.3) 전 구간이 두 폴드 모두 기존 champion(801.93/755.63)을 이김.
+
+채택: weight(cat=0.6, lgb=0.2, xgb=0.2) — 로컬 primary 815.15(+13.22), stress 833.05(+77.42). LightGBM/XGBoost 하이퍼파라미터·가중치 그리드 전부 자체 설정. 상세는 `HANDOFF.md` "실험 15" 절 참고.
+
+**상태**: 배포 패키지 `submit_multimodel_blend_corrector/submit.zip` 빌드 완료, 로컬 sanity 확인. **실제 LB 제출 전 — 사용자 결정 대기.**

@@ -1,6 +1,6 @@
 # 프로젝트 현황 핸드오프 문서
 
-**마지막 업데이트: 2026-08-12**
+**마지막 업데이트: 2026-08-13**
 
 이 세션(또는 다른 AI/사람)이 처음부터 다시 파악할 필요 없이, 이 문서 하나로 지금까지 상태를 이해할 수 있도록 정리함. 상세 내용은 각 절에서 링크한 파일 참고.
 
@@ -62,6 +62,25 @@ champion CatBoost(789.23) 모델 자체는 그대로 두고, segment(core/hybrid
 과정(segment 3-way 확정, corrector 모델 종류 4종 비교, capacity/shrink 튜닝, base_pred 피처 기각)은
 아래 "실험 9 ~ 9.2" 절과 `EXPERIMENTS.md` E010 참고. 코드는 V14/B0 계열을 전혀 재사용하지 않고
 `v3_domain_experiments/segment_residual_corrector*.py`에 전부 독립적으로 작성됨.
+
+## 🟡 2026-08-13 새 후보 — multimodel weighted blend corrector (로컬 검증 완료, 실제 제출 대기)
+
+879.80 champion 이후, base 단계를 CatBoost 단독에서 **CatBoost+LightGBM+XGBoost 가중 블렌드
+(weight=0.6/0.2/0.2)**로 바꾸고 그 위에 기존과 동일한 3-way segment ExtraTrees corrector를
+그대로 얹은 구조. `v3_domain_experiments/multimodel_weighted_blend.py`로 가중치 7종을 스윕한 결과,
+(0.8~0.4, .1~.3, .1~.3) 범위 전체가 **primary·stress 두 폴드 모두** 기존 champion을 이김(균등가중
+1/3만 primary가 살짝 손해). 채택한 지점(0.6/0.2/0.2)은 primary 최고점(816.00)에 근접하면서 stress도
+최고점(843.97)에 가까운 균형점:
+
+| | primary(2023→2024) | stress(2022→2023) |
+|---|---:|---:|
+| 기존 champion (CatBoost 단독+corrector) | 801.93 | 755.63 |
+| 신규 후보 (0.6/0.2/0.2 블렌드+corrector) | **815.15 (+13.22)** | **833.05 (+77.42)** |
+
+LightGBM/XGBoost 하이퍼파라미터·가중치 그리드 전부 자체 설정(외부 재사용 없음). 배포 패키지는
+`submit_multimodel_blend_corrector/submit.zip` — 로컬 test.csv sanity로 build_artifacts.py와
+script.py 출력이 정확히 일치함을 확인함. **아직 실제 LB 제출 전 — 이 문서의 "유효 champion"은
+여전히 879.80(9차 제출)이고, 이 후보는 사용자가 제출 여부를 결정할 때까지 후보 상태로 둔다.**
 
 ## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80이 최신
 
@@ -657,6 +676,37 @@ recency weighting) 중 확실한 개선은 없음. 조건부 능력 피처(hand+
 (b) Trackman을 새 정보원으로 쓰는 것도 실험 12에서 residual 상관관계 거의 0으로 막힘 — 그래서
 "다른 정보원 기반 3-stage" 자체가 유효하려면 먼저 residual diversity가 있는 모델/정보원을 찾아야
 한다는 게 현재까지의 결론.
+
+### 실험 15 — 멀티모델(CatBoost+LightGBM+XGBoost) 가중 블렌드 base + 기존 corrector — ✅ 로컬 신기록, 실제 제출 대기
+
+실험 5(model_diversity)에서 CatBoost/LightGBM/XGBoost 단독 residual 상관관계가 0.83~0.96으로
+(같은 계열 모델끼리의 0.998+보다) 낮게 나온 걸 근거로, "base 블렌드 자체 + 기존 corrector"를
+정확히 조합해서 처음 테스트(`multimodel_base_ensemble.py`, 균등 1/3 가중치):
+
+| | primary | stress |
+|---|---:|---:|
+| 기존 champion (CatBoost 단독+corrector) | 801.93 | 755.63 |
+| 3-model 균등 블렌드+corrector | 797.36(-4.57) | 841.23(+85.61) |
+
+stress는 크게 개선인데 primary만 살짝 손해 — CatBoost 비중을 높인 가중 블렌드로 스윕
+(`multimodel_weighted_blend.py`, 7개 가중치):
+
+| weight(cat,lgb,xgb) | primary | stress |
+|---|---:|---:|
+| (1.0,0,0) 기존 champion | 801.93 | 755.63 |
+| (0.8,.1,.1) | **816.00** | 799.16 |
+| (0.7,.15,.15) | 814.23 | 821.55 |
+| (0.6,.2,.2) ✅ 채택 | 815.15 | 833.05 |
+| (0.5,.25,.25) | 812.32 | 834.15 |
+| (0.4,.3,.3) | 806.68 | **843.97** |
+| (1/3,1/3,1/3) | 797.07 | 841.12 |
+
+**(0.8,.1,.1)부터 (0.4,.3,.3)까지 전 구간이 두 폴드 모두 기존 champion을 이김.** (0.6,.2,.2)를
+채택 — primary 최고점(816.00)에 거의 근접하면서 stress도 최고점(843.97)에 가까운 균형점.
+LightGBM/XGBoost 하이퍼파라미터·가중치 그리드 전부 자체 설정(외부 재사용 없음). 배포 패키지
+`submit_multimodel_blend_corrector/submit.zip` 빌드 완료, 로컬 test.csv sanity 확인
+(script.py 출력이 build_artifacts.py의 최종 sanity 값과 정확히 일치). **실제 LB 제출은 아직 —
+사용자 결정 대기.**
 
 ### 종합 (2026-08-12 업데이트: 실험 9.1로 결론 갱신)
 

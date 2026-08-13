@@ -1,0 +1,27 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  weight(cat,lgb,xgb)=(1.0, 0.0, 0.0): base=734.49  +corrector=801.93
+  weight(cat,lgb,xgb)=(0.8, 0.1, 0.1): base=737.25  +corrector=816.00
+  weight(cat,lgb,xgb)=(0.7, 0.15, 0.15): base=732.99  +corrector=814.23
+  weight(cat,lgb,xgb)=(0.6, 0.2, 0.2): base=724.98  +corrector=815.15
+  weight(cat,lgb,xgb)=(0.5, 0.25, 0.25): base=713.22  +corrector=812.32
+  weight(cat,lgb,xgb)=(0.4, 0.3, 0.3): base=697.70  +corrector=806.68
+  weight(cat,lgb,xgb)=(0.3333333333333333, 0.3333333333333333, 0.3333333333333333): base=685.27  +corrector=797.07
+
+===== STRESS: <2023 -> 2023 =====
+  weight(cat,lgb,xgb)=(1.0, 0.0, 0.0): base=10.25  +corrector=755.63
+  weight(cat,lgb,xgb)=(0.8, 0.1, 0.1): base=0.00  +corrector=799.16
+  weight(cat,lgb,xgb)=(0.7, 0.15, 0.15): base=0.00  +corrector=821.55
+  weight(cat,lgb,xgb)=(0.6, 0.2, 0.2): base=0.00  +corrector=833.05
+  weight(cat,lgb,xgb)=(0.5, 0.25, 0.25): base=0.00  +corrector=834.15
+  weight(cat,lgb,xgb)=(0.4, 0.3, 0.3): base=0.00  +corrector=843.97
+  weight(cat,lgb,xgb)=(0.3333333333333333, 0.3333333333333333, 0.3333333333333333): base=0.00  +corrector=841.12
+
+===== weight별 두 폴드 동시 비교 =====
+  (1.0, 0.0, 0.0): primary=801.93  stress=755.63
+  (0.8, 0.1, 0.1): primary=816.00  stress=799.16
+  (0.7, 0.15, 0.15): primary=814.23  stress=821.55
+  (0.6, 0.2, 0.2): primary=815.15  stress=833.05
+  (0.5, 0.25, 0.25): primary=812.32  stress=834.15
+  (0.4, 0.3, 0.3): primary=806.68  stress=843.97
+  (0.3333333333333333, 0.3333333333333333, 0.3333333333333333): primary=797.07  stress=841.12
