@@ -97,6 +97,19 @@ def apply_corrector(X, residual, segment, segment_list, base_pred, y, frame):
     return score(brier_score(y, consensus), y.mean()), consensus
 
 
+def pitcher_bootstrap_z(d, pitcher_ids, n_boot=500, seed=42):
+    rng = np.random.default_rng(seed)
+    uniq = np.array(sorted(set(pitcher_ids)))
+    idx_by_pitcher = {p: np.where(pitcher_ids == p)[0] for p in uniq}
+    means = np.empty(n_boot)
+    for b in range(n_boot):
+        sample = rng.choice(uniq, size=len(uniq), replace=True)
+        idx = np.concatenate([idx_by_pitcher[p] for p in sample])
+        means[b] = d[idx].mean()
+    se = means.std(ddof=1)
+    return float(d.mean()), float(d.mean() / se) if se > 0 else float("nan")
+
+
 def run_fold(df, target_season, label):
     print(f"\n===== {label}: <{target_season} -> {target_season} =====")
     train_df = df[df["season"] < target_season]
@@ -110,15 +123,21 @@ def run_fold(df, target_season, label):
     residual = y - base_pred
 
     seg3 = assign_segment_3way(valid_df)
-    score3, _ = apply_corrector(X, residual, seg3, SEGMENTS_3WAY, base_pred, y, valid_df)
+    score3, pred3 = apply_corrector(X, residual, seg3, SEGMENTS_3WAY, base_pred, y, valid_df)
 
     seg6 = assign_segment_6way(valid_df)
     seg6_list = sorted(set(seg6))
     print("  6-way segment 분포:", pd.Series(seg6).value_counts().to_dict())
-    score6, _ = apply_corrector(X, residual, seg6, seg6_list, base_pred, y, valid_df)
+    score6, pred6 = apply_corrector(X, residual, seg6, seg6_list, base_pred, y, valid_df)
 
     print(f"  base={base_score:.2f}  3-way(기존 champion)={score3:.2f}  6-way(+hand routing)={score6:.2f}  차이={score6 - score3:+.2f}")
-    return base_score, score3, score6
+
+    # 6-way가 3-way보다 나은 게 pitcher-cluster bootstrap으로 유의한지 확인
+    d = (pred3 - y) ** 2 - (pred6 - y) ** 2  # 양수면 6-way가 이김
+    pitcher_ids = valid_df["pitcher_id"].to_numpy()
+    mean_d, z = pitcher_bootstrap_z(d, pitcher_ids)
+    print(f"  6-way 우위 pitcher-bootstrap: mean_d={mean_d:.6f}  z={z:.2f}")
+    return base_score, score3, score6, z
 
 
 def main():
@@ -126,8 +145,8 @@ def main():
     r1 = run_fold(df, 2024, "PRIMARY")
     r2 = run_fold(df, 2023, "STRESS")
     print("\n===== 두 폴드 동시 비교 (3-way vs 6-way) =====")
-    print(f"  PRIMARY: 3-way={r1[1]:.2f}  6-way={r1[2]:.2f}  차이={r1[2]-r1[1]:+.2f}")
-    print(f"  STRESS:  3-way={r2[1]:.2f}  6-way={r2[2]:.2f}  차이={r2[2]-r2[1]:+.2f}")
+    print(f"  PRIMARY: 3-way={r1[1]:.2f}  6-way={r1[2]:.2f}  차이={r1[2]-r1[1]:+.2f}  z={r1[3]:.2f}")
+    print(f"  STRESS:  3-way={r2[1]:.2f}  6-way={r2[2]:.2f}  차이={r2[2]-r2[1]:+.2f}  z={r2[3]:.2f}")
 
 
 if __name__ == "__main__":

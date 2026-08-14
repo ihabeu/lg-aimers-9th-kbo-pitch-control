@@ -12,9 +12,9 @@ EDA 심층분석(`eda/deep_dive.py`, [`전처리 및 인사이트.md`](전처리
 
 - **E019 CatBoost 멀티시드 배깅** — 기각(primary -11~-16). seed=42가 유독 좋은 시드라 다른 시드와 평균하면 손해 — 프로젝트 초기 발견과 동일 패턴 재확인.
 - **E020 LSTM 재시도**(정규화 버그 수정, 15 epoch) — 이번엔 실제로 학습됐지만(loss 꾸준히 감소, CatBoost와 residual 상관 0.49~0.65로 상승) 여전히 BSS=0.00. 트랙 최종 종료.
-- **E021 hand match를 corrector segment 라우팅 축으로 추가** — 로컬 두 폴드 다 개선(primary 801.93→821.64, stress 755.63→781.96). **다만 이 신호는 E023(residual bias 스캔)이 이미 "hand_matchup과 동일 신호, 실LB 하락 전례 있음"이라고 경고했던 것과 근본적으로 같은 정보원 — 신뢰도를 다른 신규 발견과 동일하게 볼 수 없음. 자동으로 champion 교체하지 않았고, 실제 제출 여부는 사용자 판단 필요.**
+- **E021 hand match를 corrector segment 라우팅 축으로 추가** — 로컬 두 폴드 다 개선(primary 801.93→821.64, stress 755.63→781.96)했지만, 투수 단위 bootstrap 유의성 검정에서 z=1.51(primary)/1.13(stress)로 관례적 유의 기준(z≈1.96)에 못 미침. 게다가 E023(residual bias 스캔)이 이미 "hand_matchup과 동일 신호, 실LB 하락 전례 있음"이라고 경고했던 것과 근본적으로 같은 정보원 — **기각**.
 
-유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음.
+유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 3개(E019~E021) 전부 기각으로 결론.
 
 ## 대회 개요
 
