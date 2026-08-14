@@ -20,7 +20,9 @@ EDA 심층분석(`eda/deep_dive.py`, [`전처리 및 인사이트.md`](전처리
 - **E023(EXPERIMENTS.md 번호, 이 문서 E023과는 별개) 이력 rate EB스무딩/불확실성/최근드리프트** — 기각(4개 변형 전부 baseline 미달, 698.66~715.71).
 - 팀 깃헙에서 발견한 "anonymized pitcher_id ↔ Trackman ID 매핑" 아이디어는 재시도하려다, 우리도 이미 같은 매핑(`data/derived_trackman_pitcher_mapping.csv`)으로 `modeling/trackman_features.py`를 만들어 E024에서 residual 상관 거의 0으로 완전 종료했던 걸 뒤늦게 확인 — 중복 구현이라 새 스크립트는 삭제하고 재확인만 기록.
 
-유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 5개(E019~E023) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
+이어서 `modeling/within_game_state.py`(마찬가지로 작성만 되고 미실행)도 실행 — **EXPERIMENTS.md E024** "경기 내 누적 투구수(pitch_count_before)": 지금까지 유일하게 시도 안 해본 "이번 경기 내 피로도" 축이었지만 711.78(-22.71)로 기각. 게임 경계 탐지 휴리스틱이 완벽하진 않음(최대 767구로 이상치 존재)을 확인했지만, 이 세션에서 단일 신규 피처가 baseline을 이긴 적이 한 번도 없는 패턴을 고려해 정제에 추가 투자는 안 함.
+
+유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 6개(E019~E024) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
 
 ## 대회 개요
 
