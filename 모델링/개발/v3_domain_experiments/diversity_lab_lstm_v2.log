@@ -1,0 +1,38 @@
+윈도우 빌드 중...
+seqs shape=(1475092, 10, 44) (2.60 GB)
+
+===== PRIMARY: <2024 -> 2024 =====
+    epoch 1: loss=0.68452  lr=1.00e-03
+    epoch 2: loss=0.68344  lr=1.00e-03
+    epoch 3: loss=0.68285  lr=1.00e-03
+    epoch 4: loss=0.68234  lr=1.00e-03
+    epoch 5: loss=0.68186  lr=1.00e-03
+    epoch 6: loss=0.68137  lr=1.00e-03
+    epoch 7: loss=0.68089  lr=1.00e-03
+    epoch 8: loss=0.68040  lr=1.00e-03
+    epoch 9: loss=0.67992  lr=1.00e-03
+    epoch 10: loss=0.67940  lr=1.00e-03
+    epoch 11: loss=0.67891  lr=1.00e-03
+    epoch 12: loss=0.67838  lr=1.00e-03
+    epoch 13: loss=0.67791  lr=1.00e-03
+    epoch 14: loss=0.67744  lr=1.00e-03
+    epoch 15: loss=0.67695  lr=1.00e-03
+  LSTM(window=10): BSS=0.00  corr(vs CatBoost)=0.4928
+
+===== STRESS: <2023 -> 2023 =====
+    epoch 1: loss=0.68222  lr=1.00e-03
+    epoch 2: loss=0.68106  lr=1.00e-03
+    epoch 3: loss=0.68061  lr=1.00e-03
+    epoch 4: loss=0.68011  lr=1.00e-03
+    epoch 5: loss=0.67967  lr=1.00e-03
+    epoch 6: loss=0.67921  lr=1.00e-03
+    epoch 7: loss=0.67870  lr=1.00e-03
+    epoch 8: loss=0.67818  lr=1.00e-03
+    epoch 9: loss=0.67762  lr=1.00e-03
+    epoch 10: loss=0.67705  lr=1.00e-03
+    epoch 11: loss=0.67651  lr=1.00e-03
+    epoch 12: loss=0.67585  lr=1.00e-03
+    epoch 13: loss=0.67538  lr=1.00e-03
+    epoch 14: loss=0.67479  lr=1.00e-03
+    epoch 15: loss=0.67420  lr=1.00e-03
+  LSTM(window=10): BSS=0.00  corr(vs CatBoost)=0.6479

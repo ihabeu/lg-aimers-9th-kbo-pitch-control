@@ -6,6 +6,11 @@
 row_id가 실제 시간순 인덱스라는 이미 확인된 사실(HANDOFF.md)을 그대로 이용해, 투수별로 row_id
 순 정렬 후 "이 투구 시점까지의 과거 W개"만 윈도우로 사용(시즌 경계를 넘어도 실제 과거 투구면
 사용 가능 -- asof_* 피처와 같은 leak-safety 논리, 미래 데이터는 안 봄).
+
+v2(2026-08-14): 1차 시도(EXPERIMENTS.md E017)는 loss가 3 epoch 동안 거의 안 움직여 학습 미흡으로
+결론 보류였음. 원인으로 의심되는 것 -- 입력 피처가 스케일이 전혀 안 맞았다(0~100대의
+home_win_expectancy와 0~1대의 rate, 수백 단위의 라벨인코딩 정수가 그대로 섞여 있었음). 이번엔
+train 통계로만 fit한 StandardScaler를 추가하고 epoch/gradient clipping도 늘려서 재시도.
 """
 import sys
 from pathlib import Path
@@ -23,8 +28,9 @@ from baseline_catboost import FEATURES, CAT_FEATURES, L2_LEAF_REG  # noqa: E402
 
 WINDOW = 10
 HIDDEN = 64
-EPOCHS = 3
+EPOCHS = 15
 BATCH = 4096
+GRAD_CLIP = 1.0
 DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 NUMERIC_ISH = [c for c in FEATURES if c not in CAT_FEATURES]
 
@@ -88,6 +94,7 @@ def fit_catboost(train_df, valid_df):
 def train_lstm(seqs_tr, y_tr, seqs_va):
     model = LSTMClassifier(seqs_tr.shape[-1], HIDDEN).to(DEVICE)
     opt = torch.optim.Adam(model.parameters(), lr=1e-3)
+    sched = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode="min", factor=0.5, patience=2)
     loss_fn = nn.BCEWithLogitsLoss()
 
     ds = TensorDataset(torch.from_numpy(seqs_tr), torch.from_numpy(y_tr.astype(np.float32)))
@@ -101,9 +108,13 @@ def train_lstm(seqs_tr, y_tr, seqs_va):
             opt.zero_grad()
             loss = loss_fn(model(xb), yb)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP)
             opt.step()
             total += loss.item() * len(yb)
-        print(f"    epoch {epoch + 1}: loss={total / len(ds):.5f}")
+        epoch_loss = total / len(ds)
+        sched.step(epoch_loss)
+        lr_now = opt.param_groups[0]["lr"]
+        print(f"    epoch {epoch + 1}: loss={epoch_loss:.5f}  lr={lr_now:.2e}")
 
     model.eval()
     preds = []
@@ -120,7 +131,15 @@ def run_fold(df_sorted, seqs, valid_season, label):
     valid_mask = (df_sorted["season"] == valid_season).to_numpy()
     y = df_sorted["control_success"].to_numpy(np.float64)
 
-    p_lstm = train_lstm(seqs[train_mask], y[train_mask], seqs[valid_mask])
+    # train 통계로만 채널별 표준화(leak-safe) -- v1은 이게 없어서 학습이 거의 안 됐음
+    flat_tr = seqs[train_mask].reshape(-1, seqs.shape[-1])
+    valid_rows = ~np.all(flat_tr == 0, axis=1)  # 패딩(전부 0)은 통계에서 제외
+    mean = flat_tr[valid_rows].mean(axis=0)
+    std = flat_tr[valid_rows].std(axis=0)
+    std[std < 1e-6] = 1.0
+    seqs_norm = (seqs - mean) / std
+
+    p_lstm = train_lstm(seqs_norm[train_mask], y[train_mask], seqs_norm[valid_mask])
     y_va = y[valid_mask]
     bss = score(float(np.mean((p_lstm - y_va) ** 2)), float(y_va.mean()))
 
