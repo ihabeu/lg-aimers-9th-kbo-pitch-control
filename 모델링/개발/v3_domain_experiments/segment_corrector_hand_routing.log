@@ -1,0 +1,12 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  6-way segment 분포: {'core_diff': 93605, 'core_same': 85124, 'hybrid_diff': 24504, 'hybrid_same': 20264, 'dev_same': 17514, 'dev_diff': 12496}
+  base=734.49  3-way(기존 champion)=801.93  6-way(+hand routing)=821.64  차이=+19.71
+
+===== STRESS: <2023 -> 2023 =====
+  6-way segment 분포: {'core_diff': 89444, 'core_same': 86341, 'hybrid_diff': 23294, 'hybrid_same': 20760, 'dev_same': 14239, 'dev_diff': 11447}
+  base=10.25  3-way(기존 champion)=755.63  6-way(+hand routing)=781.96  차이=+26.34
+
+===== 두 폴드 동시 비교 (3-way vs 6-way) =====
+  PRIMARY: 3-way=801.93  6-way=821.64  차이=+19.71
+  STRESS:  3-way=755.63  6-way=781.96  차이=+26.34
