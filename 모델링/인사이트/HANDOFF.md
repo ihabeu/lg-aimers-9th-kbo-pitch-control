@@ -22,7 +22,9 @@ EDA 심층분석(`eda/deep_dive.py`, [`전처리 및 인사이트.md`](전처리
 
 이어서 `modeling/within_game_state.py`(마찬가지로 작성만 되고 미실행)도 실행 — **EXPERIMENTS.md E024** "경기 내 누적 투구수(pitch_count_before)": 지금까지 유일하게 시도 안 해본 "이번 경기 내 피로도" 축이었지만 711.78(-22.71)로 기각. 게임 경계 탐지 휴리스틱이 완벽하진 않음(최대 767구로 이상치 존재)을 확인했지만, 이 세션에서 단일 신규 피처가 baseline을 이긴 적이 한 번도 없는 패턴을 고려해 정제에 추가 투자는 안 함.
 
-유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 6개(E019~E024) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
+사용자가 "game_type처럼 중요한 변수 기반 모델링"을 요청해서 **EXPERIMENTS.md E025**: E021(hand routing)이 유의하지 않았던 게 애초에 hand가 importance 최하위권(40위권 밖)이라 신호가 약해서였다는 가설로, importance가 실제로 높은 변수 3개(`asof_pitcher_success_rate` 1위, `asof_batter_success_rate` 5위, `li` 15위)를 중앙값 2분할해 같은 6-way 라우팅 구조로 재시도. 결과는 가설과 정반대 — **3개 축, 양쪽 폴드 전부 통계적으로 유의하게 악화**(|z| 2.28~3.91, E021의 "유의하지 않음"보다 더 나쁜 "유의하게 나쁨"). 결론: 라우팅 축은 game_type/hand처럼 원래 이산적인 변수라야 시도할 가치가 있고, 연속형 고정보 변수는 세그먼트로 자르면 정보 손실 + 표본 분할 노이즈만 커진다 — corrector는 이미 그 정보를 44피처 그대로 연속형으로 쓰고 있어서 나눠봐야 얻는 게 없다.
+
+유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 7개(E019~E025) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
 
 ## 대회 개요
 

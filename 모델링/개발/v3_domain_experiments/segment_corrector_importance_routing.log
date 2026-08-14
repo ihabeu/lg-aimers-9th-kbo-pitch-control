@@ -1,0 +1,17 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  base=734.49  3-way(champion)=801.93
+  [asof_pitcher_success_rate] 6-way=759.04  차이=-42.89  z=-3.91  세그먼트크기={'core_lo': 133224, 'core_hi': 45505, 'hybrid_lo': 30340, 'dev_lo': 19701, 'hybrid_hi': 14428, 'dev_hi': 10309}
+  [asof_batter_success_rate] 6-way=782.63  차이=-19.30  z=-2.28  세그먼트크기={'core_lo': 164133, 'hybrid_lo': 37077, 'dev_lo': 16966, 'core_hi': 14596, 'dev_hi': 13044, 'hybrid_hi': 7691}
+  [li] 6-way=776.48  차이=-25.45  z=-2.76  세그먼트크기={'core_lo': 92575, 'core_hi': 86154, 'hybrid_lo': 22406, 'hybrid_hi': 22362, 'dev_lo': 15468, 'dev_hi': 14542}
+
+===== STRESS: <2023 -> 2023 =====
+  base=10.25  3-way(champion)=755.63
+  [asof_pitcher_success_rate] 6-way=691.95  차이=-63.68  z=-2.91  세그먼트크기={'core_lo': 117745, 'core_hi': 58040, 'hybrid_lo': 30066, 'hybrid_hi': 13988, 'dev_hi': 13533, 'dev_lo': 12153}
+  [asof_batter_success_rate] 6-way=730.44  차이=-25.19  z=-2.36  세그먼트크기={'core_lo': 156178, 'hybrid_lo': 38521, 'core_hi': 19607, 'dev_hi': 14738, 'dev_lo': 10948, 'hybrid_hi': 5533}
+  [li] 6-way=717.20  차이=-38.43  z=-3.20  세그먼트크기={'core_hi': 92216, 'core_lo': 83569, 'hybrid_hi': 23486, 'hybrid_lo': 20568, 'dev_hi': 13424, 'dev_lo': 12262}
+
+===== 요약 (3-way vs 축별 6-way) =====
+  asof_pitcher_success_rate: PRIMARY 801.93->759.04(-42.89, z=-3.91)  STRESS 755.63->691.95(-63.68, z=-2.91)
+  asof_batter_success_rate: PRIMARY 801.93->782.63(-19.30, z=-2.28)  STRESS 755.63->730.44(-25.19, z=-2.36)
+  li: PRIMARY 801.93->776.48(-25.45, z=-2.76)  STRESS 755.63->717.20(-38.43, z=-3.20)
