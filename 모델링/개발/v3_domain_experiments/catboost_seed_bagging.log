@@ -1,0 +1,25 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  seed=7 base BSS: 711.68
+  seed=42 base BSS: 734.49
+  seed=123 base BSS: 715.47
+  seed=314 base BSS: 689.47
+  seed=2026 base BSS: 712.70
+  [단일시드(기존 champion)] base=734.49  +corrector=801.93
+  [3시드 평균] base=719.79  +corrector=786.08
+  [5시드 평균] base=721.91  +corrector=790.73
+
+===== STRESS: <2023 -> 2023 =====
+  seed=7 base BSS: 0.00
+  seed=42 base BSS: 10.25
+  seed=123 base BSS: 0.00
+  seed=314 base BSS: 3.70
+  seed=2026 base BSS: 13.28
+  [단일시드(기존 champion)] base=10.25  +corrector=755.63
+  [3시드 평균] base=10.31  +corrector=752.05
+  [5시드 평균] base=5.03  +corrector=757.38
+
+===== 두 폴드 동시 비교 (base -> +corrector) =====
+  단일시드(기존 champion): primary 734.49->801.93  stress 10.25->755.63
+  3시드 평균: primary 719.79->786.08  stress 10.31->752.05
+  5시드 평균: primary 721.91->790.73  stress 5.03->757.38
