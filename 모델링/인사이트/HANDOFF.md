@@ -14,7 +14,13 @@ EDA 심층분석(`eda/deep_dive.py`, [`전처리 및 인사이트.md`](전처리
 - **E020 LSTM 재시도**(정규화 버그 수정, 15 epoch) — 이번엔 실제로 학습됐지만(loss 꾸준히 감소, CatBoost와 residual 상관 0.49~0.65로 상승) 여전히 BSS=0.00. 트랙 최종 종료.
 - **E021 hand match를 corrector segment 라우팅 축으로 추가** — 로컬 두 폴드 다 개선(primary 801.93→821.64, stress 755.63→781.96)했지만, 투수 단위 bootstrap 유의성 검정에서 z=1.51(primary)/1.13(stress)로 관례적 유의 기준(z≈1.96)에 못 미침. 게다가 E023(residual bias 스캔)이 이미 "hand_matchup과 동일 신호, 실LB 하락 전례 있음"이라고 경고했던 것과 근본적으로 같은 정보원 — **기각**.
 
-유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 3개(E019~E021) 전부 기각으로 결론.
+이어서 팀 깃헙(`iamdbstjd/LGAIMERS`, 사용자가 공유)을 참고해 방법론 인사이트를 확인하고, 예전에 작성만 되고 미실행이던 스크립트 2개를 실제로 돌려 `EXPERIMENTS.md` E022/E023으로 기록:
+
+- **E022 asof rate 상대값(diff/mean/product)** — 기각(711.93, baseline 대비 -22.56).
+- **E023(EXPERIMENTS.md 번호, 이 문서 E023과는 별개) 이력 rate EB스무딩/불확실성/최근드리프트** — 기각(4개 변형 전부 baseline 미달, 698.66~715.71).
+- 팀 깃헙에서 발견한 "anonymized pitcher_id ↔ Trackman ID 매핑" 아이디어는 재시도하려다, 우리도 이미 같은 매핑(`data/derived_trackman_pitcher_mapping.csv`)으로 `modeling/trackman_features.py`를 만들어 E024에서 residual 상관 거의 0으로 완전 종료했던 걸 뒤늦게 확인 — 중복 구현이라 새 스크립트는 삭제하고 재확인만 기록.
+
+유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 5개(E019~E023) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
 
 ## 대회 개요
 

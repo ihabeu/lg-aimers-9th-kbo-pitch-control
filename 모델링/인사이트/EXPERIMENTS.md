@@ -292,3 +292,29 @@ E017의 loss 정체가 사실은 학습 실패였다는 걸 확인 — 입력 �
 **추가 경고**: 이 신호는 애초에 E023(residual bias 스캔)이 "hand_matchup과 동일 신호, 로컬은 좋았는데 실제 LB에서 하락한 전례가 있다"고 명시적으로 경고했던 바로 그 신호원이다. 인코딩 방식(피처 → segment 라우팅)만 바꿨을 뿐 근본 정보는 동일해서, 통계적으로 유의했더라도 신뢰도를 다른 신규 발견과 동일하게 볼 수는 없었을 것이다.
 
 **결론**: 점수 개선은 있지만 통계적으로 뒷받침되지 않고, 같은 정보원의 실LB 실패 전례까지 있어 **기각**. `submit/v9_segment_corrector/submit.zip`(3-way, 879.80)을 그대로 유지한다. 코드는 재현 가능하게 남겨둔다.
+
+---
+
+## E022 (2026-08-14) — asof rate 상대값 3종(diff/mean/product) (`modeling/relative_rate_features.py`) — 기각
+
+이전 세션에 작성만 되고 실행 로그가 없던 스크립트를 실제로 돌려서 확인. `pitcher_rate_diff = asof_pitcher_success_rate - asof_batter_success_rate`, `pitcher_rate_mean`, `pitcher_rate_product` 3개를 baseline 44피처에 추가.
+
+| | baseline | +rate_diff/mean/product | 차이 |
+|---|---:|---:|---:|
+| single-split(2019-23→24) | 734.49 | 711.93 | **-22.56** |
+
+**기각.** CatBoost는 트리라 pitcher/batter rate 두 컬럼의 차/평균/곱을 이미 스스로 분기로 찾아낼 수 있어서, 명시적으로 만들어 준 파생 컬럼은 다중공선성만 늘리고 정보는 안 늘린다 — E001(교호작용 피처), 6차 제출(hand_matchup 피처), monotone_constraints(E011)에서 반복 확인된 것과 같은 패턴.
+
+## E023 (2026-08-14) — 이력 rate 고도화: EB 스무딩/불확실성/최근 드리프트 (`modeling/uncertainty_features.py`) — 기각
+
+역시 작성만 되고 미실행 상태였던 스크립트. `pitcher_smoothed_rate/batter_smoothed_rate`(EB 스무딩, prior_strength=20), `pitcher_uncertainty/batter_uncertainty`(이항표준오차), `pitcher_recent_drift`(최근3경기-시즌평균)를 각각/전체 추가.
+
+| | baseline | +pitcher uncertainty | +batter uncertainty | +recent drift | +all |
+|---|---:|---:|---:|---:|---:|
+| single-split(2019-23→24) | 734.49 | 698.66 | 702.52 | 715.71 | 714.92 |
+
+**기각.** 넷 다 baseline 미달, 그중 pitcher uncertainty가 가장 크게 나쁨(-35.83). asof_pitcher_n/asof_batter_n(표본수)이 이미 44피처에 있어서 CatBoost가 "이 rate를 얼마나 믿을지"를 스스로 표본수와 함께 학습할 수 있는데, 굳이 표준오차를 명시적으로 계산해서 얹어주는 게 오히려 방해가 되는 것으로 보인다.
+
+## Trackman 물리 데이터 재확인 (2026-08-14, 신규 실험 아님)
+
+팀 깃헙(iamdbstjd/LGAIMERS)의 E18-T0/T1을 참고하다가 "anonymized pitcher_id ↔ Trackman ID를 직접 교집합으로 조인하면 0"이라는 이전 메모를 보고 재시도하려 했으나, `data/derived_trackman_pitcher_mapping.csv`(332명, rel_gap 유사도 매핑)를 이용한 동일한 접근이 이미 `modeling/trackman_features.py`로 구현되고 E024(HANDOFF.md)에서 residual 상관관계 거의 0(-0.0038~+0.0027)으로 **완전 종료 처리된 상태**였음을 확인. 중복 구현 방지를 위해 새로 만든 스크립트는 삭제. Trackman 물리 데이터 경로는 계속 닫힌 상태 유지.
