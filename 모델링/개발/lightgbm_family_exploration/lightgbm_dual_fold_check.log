@@ -1,0 +1,6 @@
+PRIMARY: LightGBM=616.43  CatBoost=734.49  차이=-118.06
+STRESS: LightGBM=0.00  CatBoost=10.25  차이=-10.25
+
+===== 요약 =====
+PRIMARY: LightGBM=616.43 vs CatBoost=734.49 (차이 -118.06)
+STRESS:  LightGBM=0.00 vs CatBoost=10.25 (차이 -10.25)

@@ -24,7 +24,9 @@ EDA 심층분석(`eda/deep_dive.py`, [`전처리 및 인사이트.md`](전처리
 
 사용자가 "game_type처럼 중요한 변수 기반 모델링"을 요청해서 **EXPERIMENTS.md E025**: E021(hand routing)이 유의하지 않았던 게 애초에 hand가 importance 최하위권(40위권 밖)이라 신호가 약해서였다는 가설로, importance가 실제로 높은 변수 3개(`asof_pitcher_success_rate` 1위, `asof_batter_success_rate` 5위, `li` 15위)를 중앙값 2분할해 같은 6-way 라우팅 구조로 재시도. 결과는 가설과 정반대 — **3개 축, 양쪽 폴드 전부 통계적으로 유의하게 악화**(|z| 2.28~3.91, E021의 "유의하지 않음"보다 더 나쁜 "유의하게 나쁨"). 결론: 라우팅 축은 game_type/hand처럼 원래 이산적인 변수라야 시도할 가치가 있고, 연속형 고정보 변수는 세그먼트로 자르면 정보 손실 + 표본 분할 노이즈만 커진다 — corrector는 이미 그 정보를 44피처 그대로 연속형으로 쓰고 있어서 나눠봐야 얻는 게 없다.
 
-유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 7개(E019~E025) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
+사용자가 "다른 모델 패밀리로 처음부터" 탐색을 요청해서 **EXPERIMENTS.md E026**: LightGBM을 CatBoost급으로 제대로 튜닝(`개발/lightgbm_family_exploration/`, num_leaves/min_child_samples/reg_lambda 18조합 스윕). 결과는 결정적으로 부정적 — 최고 config가 616.43으로 CatBoost baseline(734.49) 대비 **-118.06**, 이 세션 최대 격차. AUC는 CatBoost와 거의 동일(0.545 vs 0.548)한데 예측 평균에 체계적 bias(+0.0098)가 있고, 이 bias를 완벽 제거(진단용 leak-Platt 상한)해도 657.04로 여전히 -77점. 게다가 residual 상관관계가 CatBoost와 **0.9996**(E014가 쟀던 cross-family 0.83~0.96보다 훨씬 높음) — 잘 튜닝할수록 CatBoost와 다른 실수를 하는 게 아니라 같은 실수를 덜 정확하게 반복한다는 뜻, 즉 앙상블 다양성 가치도 없음. 118점 격차를 corrector(champion 기준 +67점 수준)로 못 뒤집을 게 명백해 corrector 얹는 단계는 실행 없이 트랙 종료. **결론: 이 데이터/피처 구조에서 CatBoost가 구조적 우위, 다른 패밀리로 처음부터는 여기서 마무리.**
+
+유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 8개(E019~E026) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
 
 ## 대회 개요
 

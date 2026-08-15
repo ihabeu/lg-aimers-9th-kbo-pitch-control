@@ -1,0 +1,27 @@
+num_leaves= 15 min_child_samples=  200 reg_lambda=  1.0  score=614.62  best_iter=252
+num_leaves= 15 min_child_samples=  200 reg_lambda= 10.0  score=601.46  best_iter=247
+num_leaves= 15 min_child_samples=  200 reg_lambda= 50.0  score=610.65  best_iter=283
+num_leaves= 15 min_child_samples= 1000 reg_lambda=  1.0  score=616.43  best_iter=276
+num_leaves= 15 min_child_samples= 1000 reg_lambda= 10.0  score=607.64  best_iter=242
+num_leaves= 15 min_child_samples= 1000 reg_lambda= 50.0  score=610.64  best_iter=228
+num_leaves= 31 min_child_samples=  200 reg_lambda=  1.0  score=594.02  best_iter=179
+num_leaves= 31 min_child_samples=  200 reg_lambda= 10.0  score=611.83  best_iter=198
+num_leaves= 31 min_child_samples=  200 reg_lambda= 50.0  score=611.63  best_iter=206
+num_leaves= 31 min_child_samples= 1000 reg_lambda=  1.0  score=596.76  best_iter=182
+num_leaves= 31 min_child_samples= 1000 reg_lambda= 10.0  score=611.12  best_iter=200
+num_leaves= 31 min_child_samples= 1000 reg_lambda= 50.0  score=597.21  best_iter=180
+num_leaves= 63 min_child_samples=  200 reg_lambda=  1.0  score=590.65  best_iter=146
+num_leaves= 63 min_child_samples=  200 reg_lambda= 10.0  score=600.39  best_iter=206
+num_leaves= 63 min_child_samples=  200 reg_lambda= 50.0  score=601.81  best_iter=213
+num_leaves= 63 min_child_samples= 1000 reg_lambda=  1.0  score=605.07  best_iter=176
+num_leaves= 63 min_child_samples= 1000 reg_lambda= 10.0  score=599.61  best_iter=146
+num_leaves= 63 min_child_samples= 1000 reg_lambda= 50.0  score=611.92  best_iter=140
+
+===== 상위 5개 =====
+  num_leaves=15 min_child_samples=1000 reg_lambda=1.0  score=616.43  best_iter=276
+  num_leaves=15 min_child_samples=200 reg_lambda=1.0  score=614.62  best_iter=252
+  num_leaves=63 min_child_samples=1000 reg_lambda=50.0  score=611.92  best_iter=140
+  num_leaves=31 min_child_samples=200 reg_lambda=10.0  score=611.83  best_iter=198
+  num_leaves=31 min_child_samples=200 reg_lambda=50.0  score=611.63  best_iter=206
+
+(비교 기준: CatBoost baseline single-split 734.49)
