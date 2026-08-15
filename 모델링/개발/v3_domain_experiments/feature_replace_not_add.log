@@ -1,0 +1,10 @@
+===== relative_rate: 원본(asof_pitcher/batter_success_rate) 유지 vs 교체 =====
+baseline(원본 44개): score=734.49  brier=0.247972  (n피처=44)
+추가(44+3, E022 재확인): score=711.93  brier=0.248028  (n피처=47)
+교체(42+diff+mean, 순수 재매개변수화): score=708.79  brier=0.248036  (n피처=44)
+교체(42+diff+mean+product): score=696.57  brier=0.248067  (n피처=45)
+
+===== uncertainty: raw rate 유지 vs smoothed_rate로 교체 =====
+baseline(원본 44개): score=734.49  brier=0.247972  (n피처=44)
+추가(44+2, E023 스타일): score=710.93  brier=0.248031  (n피처=46)
+교체(42+smoothed, raw rate 삭제): score=701.73  brier=0.248054  (n피처=44)
