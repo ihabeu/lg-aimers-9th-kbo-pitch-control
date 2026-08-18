@@ -1,0 +1,18 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  [champion(mr+or)] 811.45  (기준)
+  [+raw(qR,qM,qO)] 810.72  차이(vs champion)=-0.73  z=-0.19
+  [+3rd log-ratio(om)] 806.53  차이(vs champion)=-4.92  z=-1.39
+  [전부(mr,or,om,qR,qM,qO)] 809.49  차이(vs champion)=-1.96  z=-0.44
+
+===== STRESS: <2023 -> 2023 =====
+  [champion(mr+or)] 768.56  (기준)
+  [+raw(qR,qM,qO)] 802.07  차이(vs champion)=+33.51  z=4.52
+  [+3rd log-ratio(om)] 774.41  차이(vs champion)=+5.85  z=1.22
+  [전부(mr,or,om,qR,qM,qO)] 810.39  차이(vs champion)=+41.83  z=5.35
+
+===== 요약 =====
+  [champion(mr+or)] PRIMARY 811.45  STRESS 768.56
+  [+raw(qR,qM,qO)] PRIMARY 810.72  STRESS 802.07
+  [+3rd log-ratio(om)] PRIMARY 806.53  STRESS 774.41
+  [전부(mr,or,om,qR,qM,qO)] PRIMARY 809.49  STRESS 810.39
