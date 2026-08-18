@@ -1,0 +1,10 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  champion(hazard 입력에 pitch_count_before 추가): 809.71
+
+===== STRESS: <2023 -> 2023 =====
+  champion(hazard 입력에 pitch_count_before 추가): 808.75
+
+===== 요약 (비교 기준: E030 champion PRIMARY~809-818/STRESS~801-810, 실행마다 미세 변동) =====
+PRIMARY: 809.71
+STRESS:  808.75

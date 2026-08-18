@@ -1,0 +1,12 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  champion(hazard 6개): 817.96  (기준)
+  +joint softmax 4개: 817.64  차이=-0.33  z=-0.07
+
+===== STRESS: <2023 -> 2023 =====
+  champion(hazard 6개): 800.92  (기준)
+  +joint softmax 4개: 848.71  차이=+47.78  z=3.95
+
+===== 요약 =====
+PRIMARY: champion 817.96 -> +joint softmax 817.64 (z=-0.07)
+STRESS:  champion 800.92 -> +joint softmax 848.71 (z=3.95)

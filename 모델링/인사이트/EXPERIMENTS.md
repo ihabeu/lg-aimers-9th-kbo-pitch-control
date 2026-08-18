@@ -426,3 +426,43 @@ E029(champion, 911.19)가 실제로 통한 걸 확인한 뒤, "비율(모양)"�
 **배포**: `submit/v12_rmo_full_meta/submit.zip` 빌드, sanity(빌드시점 5행 재현값과 격리 환경 재실행 결과 일치) 확인 완료.
 
 **실제 제출 결과(2026-08-18): Public LB 915.2039506907 — E029(911.19) 대비 +4.01, 새 champion.** 로컬에서 예상한 대로(PRIMARY 노이즈 수준, STRESS 강하게 유의) 실제로도 개선 방향이 맞았다 — E029/E030 둘 다 real LB 개선으로 이어지면서, "메타피처를 log-ratio에서 원시확률까지 확장하는" 이 계열 자체가 신뢰할 만한 방향임을 재확인. `submit/v12_rmo_full_meta/submit.zip`이 새 유효 champion.
+
+## E031 (2026-08-18) — hazard 서브모델 입력에 파생변수 2종 추가 시도 — 둘 다 신호 약함/불명확, 기각
+
+사용자 요청으로 "예전에 기각했던 코드"(우리 자체 저장소, `within_game_state.py` 등)를 R/M/O hazard 서브모델의 **입력 피처**로 재활용해봄(base 모델/corrector 직접 추가가 아니라, hazard 서브모델을 더 정확하게 만들어서 그 출력 메타피처 품질을 올릴 수 있는지 확인하는 구조).
+
+**(1) 정수 count 재구성으로 만든 "최근 50구 reverse rate"** (`segment_corrector_recent_reverse_meta.py`) — `asof_pitcher_reverse_rate`만 유일하게 공식 prev1/3/5_game 버전이 없다는 데이터 공백을, 팀 깃헙 검토 때 확인한 정수 count 재구성 트릭(`round(rate*n)`)으로 직접 채워서 corrector 메타피처에 추가:
+
+| | champion(6개 메타피처) | +recent_reverse_rate | 차이 | z |
+|---|---:|---:|---:|---:|
+| PRIMARY | 817.96 | 816.17 | -1.80 | -0.49 |
+| STRESS | 800.92 | 808.28 | +7.35 | 1.21 |
+
+둘 다 유의 기준 미달(E029/E030의 패턴 — "최소 한 폴드는 확실히 유의"— 이 안 나타남). 기각.
+
+**(2) `pitch_count_before`(경기 내 누적 투구수, E024에서 base 직접 추가로 이미 기각)를 hazard 서브모델 입력에만 추가** (`segment_corrector_pitch_count_hazard_input.py`) — "피로도가 성공 여부는 못 바꿔도 실패 유형은 바꿀 수 있다"는 가설:
+
+| | PRIMARY | STRESS |
+|---|---:|---:|
+| +pitch_count_before(hazard 입력) | 809.71 | 808.75 |
+
+이 실행에선 champion baseline을 같이 안 구해서(스크립트 설계 미비) 정식 z-검정은 못했지만, 두 값 다 champion의 실행 간 자연 변동 범위(PRIMARY 809~818, STRESS 801~810, CatBoost `thread_count=-1` 비결정성 때문 — 아래 참고) 안에 있어 눈에 띄는 개선이 없다고 판단. 기각.
+
+**결론**: "hazard 서브모델에 정보를 더 먹인다"는 방향 자체는 R/M/O 메타피처 성공의 핵심이 아니었다 — 두 시도 다 이미 44피처 안에 있는 정보와 겹치는 파생값이라 신호가 약했다(E022/E023/E028과 같은 패턴). 다음은 "hazard 서브모델 입력 늘리기"가 아니라 "타겟을 또 다르게 분해하는 새로운 축"을 찾는 방향으로 전환(E032).
+
+**부록 — CatBoost 비결정성 확인**: `thread_count=-1`(멀티스레드) 때문에 같은 코드·같은 random_seed로도 실행마다 champion 절대 점수가 몇 점씩 흔들린다(관측: PRIMARY 809~818, STRESS 801~810). 같은 실행 안에서의 champion-vs-신규피처 비교(paired z-test)는 여전히 유효하지만, 서로 다른 실행의 절대 점수를 직접 비교하면 안 된다 — 앞으로의 실험은 반드시 같은 실행 안에서 champion baseline을 같이 구해서 비교할 것.
+
+## E032 (2026-08-18) — 팀 깃헙 M0 아이디어(4-class joint softmax) 독립 재구현, corrector 메타피처로 추가 — champion(911.19→915.20)과 동일한 승리 패턴, 제출 대기
+
+E031에서 "hazard 서브모델 입력을 늘리는" 방향이 안 통한다는 걸 확인한 뒤, 사용자 요청으로 다른 축을 팀 깃헙에서 탐색. 팀의 M0(4-class joint softmax: success/reverse/middle/outside를 한 모델로 동시 예측)는 우리가 쓰는 **순차적 hazard**(qR → qM|not R → qO|not R,M)와 다른 구조다 — 순차 체인은 "reverse가 아니라는 조건 하에서만" middle을 보지만, joint softmax는 네 유형 간 상관관계를 하나의 공유 표현으로 동시에 학습한다. 코드는 가져오지 않고 "4-class joint softmax"라는 구조만 참고해서 독립 재구현(`segment_corrector_joint_softmax_meta.py`) — 라벨은 이미 있는 `rmo_labels.py`의 leak-safe reverse/middle/outside_label을 그대로 재사용해 0/1/2/3 정수 라벨만 새로 구성.
+
+기존 6개 hazard 메타피처는 그대로 두고, joint softmax 모델의 4개 클래스 확률(`joint_p_success/reverse/middle/outside`)을 추가로 얹음:
+
+| | champion(hazard 6개) | +joint softmax 4개 | 차이 | z |
+|---|---:|---:|---:|---:|
+| PRIMARY | 817.96 | 817.64 | -0.33 | -0.07 |
+| STRESS | 800.92 | 848.71 | **+47.78** | **3.95** |
+
+**E029/E030과 완전히 같은 승리 패턴**: PRIMARY는 champion과 통계적으로 완전히 구별 안 되는 수준(z=-0.07, 사실상 0)이고, STRESS는 z=3.95로 강하게 유의 — 게다가 STRESS 개선폭(+47.78)이 E030(+41.83)보다도 크다. 순차적 hazard 체인이 못 잡는 정보(네 유형 간 동시 상관관계)를 joint softmax가 보완적으로 잡고 있다는 뜻으로 해석된다.
+
+**배포**: `submit/v13_joint_softmax_meta/submit.zip` 빌드 예정.
