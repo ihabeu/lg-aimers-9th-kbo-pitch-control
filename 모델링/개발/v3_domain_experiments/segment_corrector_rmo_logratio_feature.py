@@ -108,7 +108,8 @@ def pitcher_half(frame, seed):
     return np.where(frame["pitcher_id"].astype(str).isin(first_half).to_numpy(), 0, 1)
 
 
-def apply_corrector(X, residual, segment, base_pred, y, frame):
+def apply_corrector(X, residual, segment, base_pred, y, frame, corrector_cfg=None):
+    corrector_cfg = corrector_cfg or CORRECTOR_CFG
     seed_preds = []
     for seed in SEEDS:
         fold = pitcher_half(frame, seed)
@@ -122,7 +123,7 @@ def apply_corrector(X, residual, segment, base_pred, y, frame):
                 if tr.sum() < 500 or ev.sum() < 50:
                     correction[ev] = 0.0
                     continue
-                model = ExtraTreesRegressor(n_jobs=-1, random_state=16200 + int(seed), **CORRECTOR_CFG)
+                model = ExtraTreesRegressor(n_jobs=-1, random_state=16200 + int(seed), **corrector_cfg)
                 model.fit(X.loc[tr], residual[tr])
                 correction[ev] = model.predict(X.loc[ev])
         seed_preds.append(np.clip(base_pred + correction, 0, 1))

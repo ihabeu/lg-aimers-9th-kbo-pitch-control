@@ -26,7 +26,11 @@ EDA 심층분석(`eda/deep_dive.py`, [`전처리 및 인사이트.md`](전처리
 
 사용자가 "다른 모델 패밀리로 처음부터" 탐색을 요청해서 **EXPERIMENTS.md E026**: LightGBM을 CatBoost급으로 제대로 튜닝(`개발/lightgbm_family_exploration/`, num_leaves/min_child_samples/reg_lambda 18조합 스윕). 결과는 결정적으로 부정적 — 최고 config가 616.43으로 CatBoost baseline(734.49) 대비 **-118.06**, 이 세션 최대 격차. AUC는 CatBoost와 거의 동일(0.545 vs 0.548)한데 예측 평균에 체계적 bias(+0.0098)가 있고, 이 bias를 완벽 제거(진단용 leak-Platt 상한)해도 657.04로 여전히 -77점. 게다가 residual 상관관계가 CatBoost와 **0.9996**(E014가 쟀던 cross-family 0.83~0.96보다 훨씬 높음) — 잘 튜닝할수록 CatBoost와 다른 실수를 하는 게 아니라 같은 실수를 덜 정확하게 반복한다는 뜻, 즉 앙상블 다양성 가치도 없음. 118점 격차를 corrector(champion 기준 +67점 수준)로 못 뒤집을 게 명백해 corrector 얹는 단계는 실행 없이 트랙 종료. **결론: 이 데이터/피처 구조에서 CatBoost가 구조적 우위, 다른 패밀리로 처음부터는 여기서 마무리.**
 
-유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 8개(E019~E026) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
+사용자가 팀 깃헙(`iamdbstjd/LGAIMERS`)의 진행상황(리더보드 1080)을 다시 물어봐서, 저장소를 로컬 clone해서 깊게 검토(Explore 에이전트 활용) — 저장소 자체엔 리더보드 제출 기록이 727.72(E12)뿐이고, 문서화된 가장 좋은 로컬 숫자를 역산해도 ~913 수준이라 1080은 저장소 근거로는 확인 불가(팀원에게 직접 확인 필요 판단). 다만 팀의 E17-A 아이디어(실패유형 reverse/middle/outside hazard의 log-ratio를 잔차 보정 메타피처로 씀)가 우리가 안 써본 축이라는 걸 확인.
+
+사용자가 "코드를 그대로 따라해달라"고 했으나, 대회 규정(§11, V14 사건 이후 확립)상 같은 팀으로 병합 전까지는 다른 팀 코드로 취급해야 해서 **아이디어만 참고하고 코드는 독립적으로 새로 작성**함을 명시하고 진행. `rmo_labels.py`(기존 E002/E003 자산)를 재사용해 R/M/O hazard 서브모델을 만들고 log-ratio 2개를 기존 3-way segment corrector에 메타피처로 추가(**EXPERIMENTS.md E029**): PRIMARY 801.93→811.45(z=1.71), STRESS 755.63→768.56(z=2.01) — 이 세션에서 나온 어떤 신규 실험보다 좋은 결과(STRESS는 실제로 유의). 사용자 요청으로 후속 조정(mr/or 단독, corrector capacity 강화)까지 스윕했으나 원본 조합이 이미 최선이었고 PRIMARY z는 끝내 1.96을 못 넘음 — E021과 동일한 "로컬 두 폴드 신기록, 통계적 유의성 미달" 패턴으로 **최종 기각**. 새 submit.zip은 만들지 않음(이 프로젝트의 zip 정책은 로컬 신기록뿐 아니라 이 세션 내내 지켜온 유의성 기준까지 같이 봐야 한다고 판단).
+
+유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 9개(E019~E029) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
 
 ## 대회 개요
 
