@@ -60,7 +60,8 @@ Phase2 수료 기준: Public LB 549.51 이상. 데이터 설명서는 [`data/dat
 | 8차 (2026-08-12) | V14(recent shared base + 3-domain residual adapter, v1.1 튜닝) | 2024 시즌(base) + 2024 라벨(residual adapter) — recent-shared-base 철학 | 1032.0064496443 — **🚫 철회함(아래 "V14 철회" 절 참고). 외부 참고자료와의 유사성 문제로 부정 제출 위험 확인돼 철회. 유효 champion 아님.** |
 | 9차 (2026-08-13) | champion CatBoost(789.23, 완전 독립개발) + 3-way segment(core/hybrid/dev) residual corrector(ExtraTrees) | champion은 그대로, corrector만 오프라인 학습 — `submit/v9_segment_corrector/submit.zip` | **879.7995048079 (현재 최선, 유효 champion)** — 789.23 대비 +90.57. 로컬 primary(801.93)보다 실제가 더 높게 나옴(local/actual 정합). V14 코드 재사용 없이 완전 독립 개발, 아키텍처(base+segment residual correction)만 참고하고 구현/segment 기준/하이퍼파라미터는 전부 우리 자체 EDA·검증(`EXPERIMENTS.md` E013, 아래 "E019~E020"). |
 | 10차 (2026-08-13) | CatBoost(0.6)+LightGBM(0.2)+XGBoost(0.2) 가중 블렌드 + 3-way segment corrector | base 3모델 전부 2019~2024 전체 학습 — `submit/v10_multimodel_blend/submit.zip` | **869.7143690742 — 879.80 미달, 채택 안 함.** 로컬은 primary(815.15)/stress(833.05) 두 폴드 다 champion(801.93/755.63)을 이겼는데 실제는 오히려 -10.09 낮음 — **local/actual 재괴리 사례**(6차 hand_matchup과 같은 패턴). 유효 champion은 계속 879.80(9차). 원인 추정: LightGBM/XGBoost가 CatBoost보다 2025 일반화가 약해서, 로컬(2023/2024 검증)에서 잡히는 개선이 진짜 미래 데이터로는 전이가 약함 — 확정 아니고 가설. |
-| 11차 (2026-08-18) | 9차와 동일 base+3-way corrector + R/M/O(reverse/middle/outside) hazard log-ratio 메타피처 2개(`rmo_log_ratio_mr`, `rmo_log_ratio_or`) 추가 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v11_rmo_logratio/submit.zip` | **911.1890760848 (현재 최선, 유효 champion)** — 879.80 대비 **+31.39**. 로컬은 PRIMARY 811.45(z=1.71, 유의기준 미달)/STRESS 768.56(z=2.01, 유의)로 판정이 엇갈렸던 후보(`EXPERIMENTS.md` E029)인데 실제는 뚜렷한 개선으로 확인됨 — **로컬 유의성 미달이 항상 실LB 실패를 뜻하진 않는다**는 반례. 팀 깃헙(iamdbstjd/LGAIMERS) E17-A 아이디어(실패유형 hazard의 log-ratio를 메타피처로)를 코드는 가져오지 않고 아이디어만 참고해 독립 재구현. |
+| 11차 (2026-08-18) | 9차와 동일 base+3-way corrector + R/M/O(reverse/middle/outside) hazard log-ratio 메타피처 2개(`rmo_log_ratio_mr`, `rmo_log_ratio_or`) 추가 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v11_rmo_logratio/submit.zip` | **911.1890760848** — 879.80 대비 **+31.39**. 로컬은 PRIMARY 811.45(z=1.71, 유의기준 미달)/STRESS 768.56(z=2.01, 유의)로 판정이 엇갈렸던 후보(`EXPERIMENTS.md` E029)인데 실제는 뚜렷한 개선으로 확인됨 — **로컬 유의성 미달이 항상 실LB 실패를 뜻하진 않는다**는 반례. 팀 깃헙(iamdbstjd/LGAIMERS) E17-A 아이디어(실패유형 hazard의 log-ratio를 메타피처로)를 코드는 가져오지 않고 아이디어만 참고해 독립 재구현. |
+| 12차 (2026-08-18) | 11차와 동일 구조, R/M/O 메타피처를 log-ratio 2개 → 원시확률 3개(`qR`,`qM`,`qO`)+log-ratio 3개(`om=log(qO/qM)` 신규 포함) 6개로 확장 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v12_rmo_full_meta/submit.zip` | **915.2039506907 (현재 최선, 유효 champion)** — 911.19 대비 **+4.01**. 로컬(`EXPERIMENTS.md` E030)에서 PRIMARY는 champion과 통계적으로 구별 안 되는 노이즈 수준(z=-0.44), STRESS는 z=5.35로 강하게 유의했는데 — 실제로도 그 방향(개선) 그대로 재현됨. |
 
 **hand_matchup 최종 판정**: 제출 모델로는 채택 안 함(789.23 유지). 다만 "선수별 조건부 이력 정보"라는 가설 자체를 검증하려고 STEP 1(platoon feature) 4개를 독립적으로 테스트함 — A: pitcher_vs_current_batter_hand_rate 724.39(-10.10), B: batter_vs_current_pitcher_hand_rate 678.90(-55.59), C: pitcher_platoon_advantage 734.33(-0.16), D: batter_platoon_advantage 703.55(-30.94). 전부 baseline 미달로 **platoon 방향도 종료**. hand_matchup의 로컬 개선이 실제 LB로 이어지지 않은 것과 별개로, platoon 자체도 로컬에서부터 신호가 없었음(코드: [`platoon_features.py`](../modeling/platoon_features.py), [`platoon_ablation.py`](../modeling/platoon_ablation.py)).
 
@@ -132,7 +133,16 @@ z≈1.96 미달**), STRESS 755.63→768.56(z=2.01, 유의). "두 폴드 다 유�
 정도면 실제로 전이될 수 있다는 뜻일 수 있다(표본 하나로 결론 내리긴 이르고, 다음 후보 판단 시
 참고할 것).
 
-## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80/911.19가 최신
+**이어서 사용자 요청으로 이 메타피처를 확장(`EXPERIMENTS.md` E030)**: log-ratio 2개 → 원시확률
+3개(qR/qM/qO) + log-ratio 3개(log(qO/qM) 신규 포함) 6개. 로컬은 champion(E029) 대비 PRIMARY가
+통계적으로 구별 안 되는 노이즈 수준(z=-0.44), STRESS는 z=5.35로 강하게 유의 — E029보다 더 안전한
+프로필로 판단해 `submit/v12_rmo_full_meta/submit.zip` 빌드 후 제출. **실제 결과(12차,
+2026-08-18): 915.2039506907 — 911.19 대비 +4.01, 새 champion.** 로컬 예측(PRIMARY 노이즈/STRESS
+강한 개선)이 실제 방향과 일치 — E029/E030 둘 다 실LB 개선으로 이어지면서 "R/M/O 메타피처를
+확장하는" 이 계열 자체가 신뢰할 만한 구조적 레버임이 재확인됨. **유효 champion은
+`submit/v12_rmo_full_meta/submit.zip`(915.20).**
+
+## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80/911.19/915.20이 최신
 
 - 위치: [`modeling/baseline_catboost.py`](../modeling/baseline_catboost.py) + [`modeling/baseline_catboost.ipynb`](../modeling/baseline_catboost.ipynb)
 - 레시피: CatBoost, raw 44피처(전처리 없음, 결측치 네이티브 처리), `depth=6, learning_rate=0.05, l2_leaf_reg=15`, iterations는 2019-23→24 검증에서 찾은 값(204)으로 2019~2024 전체 재학습
