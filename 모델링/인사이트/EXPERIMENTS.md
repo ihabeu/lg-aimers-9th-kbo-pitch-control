@@ -378,7 +378,7 @@ E021(hand_matchup 라우팅)이 유의하지 않았던 이유가 "pitcher_hand/b
 
 **기각, 그것도 "추가"보다 더 나쁘게.** 특히 diff+mean 교체 케이스는 `asof_pitcher_success_rate`/`asof_batter_success_rate` 2차원을 산술적으로 정보 손실 없는 45도 회전(diff=p-b, mean=(p+b)/2 → p=mean+diff/2, b=mean-diff/2로 완전 복원 가능)으로만 바꾼 건데도 708.79로 원본 축(734.49)보다 -25.70 나빴다. 즉 "정보량은 그대로인데 축만 회전시켜도" 트리 모델에는 손해다 — CatBoost의 축-평행 분기가 원본 축(투수 rate, 타자 rate 각각의 독립적인 marginal 효과)에서 이미 효율적으로 신호를 찾고 있었는데, 회전된 축(차이/평균)으로는 그 각각의 marginal 효과를 다시 재구성해야 해서 오히려 더 비효율적이 된 것으로 해석된다. **결론: 원본을 지우는 것 자체가 항상 정보 손실이 없어도 손해 — CatBoost에게는 "원본 축을 그대로 준다"는 것 자체가 이미 최적에 가까운 선택이었다.**
 
-## E029 (2026-08-15) — R/M/O hazard의 실패유형 log-ratio를 corrector 메타피처로 추가 (`개발/v3_domain_experiments/segment_corrector_rmo_logratio_feature.py`) — 이 세션 최고 성적이었지만 조정 후에도 유의성 기준 미달, 최종 기각
+## E029 (2026-08-15) — R/M/O hazard의 실패유형 log-ratio를 corrector 메타피처로 추가 (`개발/v3_domain_experiments/segment_corrector_rmo_logratio_feature.py`) — 로컬 유의성 기준은 미달이었지만 실제 제출 결과 새 champion(911.19)
 
 팀 깃헙 E17-A의 아이디어(실패 유형 reverse/middle/outside를 hazard 서브모델로 예측한 뒤, 예측값 자체가 아니라 "실패 유형 간 비율"을 메타피처로 쓴다)를 코드는 그대로 안 가져오고 아이디어만 참고해서 독립 재구현(대회 규정 §11 원칙). R/M/O 라벨은 이미 있는 `rmo_labels.py`(E002/E003에서 leak-safe 검증됨) 그대로 재사용, hazard 서브모델은 champion과 같은 CatBoost(44피처, train_df로만 학습), `rmo_log_ratio_mr = log((qM+eps)/(qR+eps))`, `rmo_log_ratio_or = log((qO+eps)/(qR+eps))` 2개를 만들어 기존 3-way corrector의 입력 피처(44개)에 추가.
 
@@ -402,4 +402,10 @@ E021(hand_matchup 라우팅)이 유의하지 않았던 이유가 "pitcher_hand/b
 | or만 / 기본 | 800.50 (-0.30) | 762.05 (1.06) |
 | or만 / 정규화강화 | 801.87 (-0.01) | 751.08 (-0.83) |
 
-**결론: 조정 실패, 원본(both+기본 capacity)이 이미 최선이었다.** mr/or 둘 중 하나만 쓰면 정보가 줄어 오히려 나빠지고(두 피처가 서로 보완적이라는 뜻), capacity를 낮추면(min_leaf=400) 두 폴드 다 z가 떨어진다(corrector가 이 메타피처의 신호를 학습하는 데 오히려 더 많은 분기 여유가 필요했다는 뜻). **최종 기각.** E021과 완전히 동일한 패턴 — 로컬 두 폴드 다 신기록을 세웠지만("1차 판단(점수만)" 통과) 통계적 유의성 검증("2차 검증")에서 PRIMARY가 못 넘었고, 조정으로도 못 끌어올렸다. `submit/v9_segment_corrector/submit.zip`(3-way, 879.80)을 그대로 유지, 이 조합으로는 새 submit.zip을 만들지 않는다(이 프로젝트의 submit.zip 정책은 "로컬 dual-fold 신기록"뿐 아니라 이 세션 내내 지켜온 유의성 기준까지 함께 봐야 함).
+**조정 결론: mr/or 둘 중 하나만 쓰면 정보가 줄어 오히려 나빠지고(두 피처가 서로 보완적), capacity를 낮추면(min_leaf=400) 두 폴드 다 z가 떨어진다** — 원본(both+기본 capacity)이 이미 최선이었고 PRIMARY z를 1.96 위로 못 끌어올렸다.
+
+**로컬 판정은 E021과 완전히 같은 패턴이었다** — 두 폴드 다 신기록("1차 판단" 통과)이지만 통계적 유의성("2차 검증")에서 PRIMARY가 못 넘음. 이 세션의 원칙("두 폴드 다 유의해야 채택")을 엄격 적용하면 기각감이었지만, 사용자가 실제 제출로 직접 검증하길 원해 `submit/v11_rmo_logratio/submit.zip`을 빌드(champion base 재사용 + hazard 서브모델 2세트(residual-source용 2019~2023, 배포용 2019~2024) + corrector 재학습, sanity 확인 완료) 후 제출.
+
+**실제 제출 결과(2026-08-18): Public LB 911.1890760848 — 879.80 대비 +31.39, 새 champion으로 채택.**
+
+**중요한 교훈**: 이 세션 내내 "로컬 두 폴드 다 통계적으로 유의해야 실제로도 통한다"는 원칙으로 hand_matchup(6차)·멀티모델 블렌드(10차)·E021을 기각해왔는데, 이번엔 그 원칙이 틀렸다. 사후 추정: hand_matchup/멀티모델 블렌드는 애초에 두 폴드 다 유의하지 않았거나(또는 실패 전례가 있는 동일 신호원) 아예 다른 실패 이유가 있었던 반면, 이번엔 **STRESS는 실제로 유의했고 PRIMARY만 근소하게 못 미쳤다** — "두 폴드 다 유의"가 아니라 "최소 한 폴드는 확실히 유의 + 다른 폴드도 같은 방향으로 근접"이면 실제로 전이될 수 있다는 뜻일 수 있다. 표본이 하나뿐이라 확정할 수는 없고, 다음 유사 사례(예: 향후 재검토 가능성이 있는 E021 자체)를 판단할 때 참고 자료로 남겨둔다.

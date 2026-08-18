@@ -1,6 +1,6 @@
 # 프로젝트 현황 핸드오프 문서
 
-**마지막 업데이트: 2026-08-14**
+**마지막 업데이트: 2026-08-18**
 
 이 세션(또는 다른 AI/사람)이 처음부터 다시 파악할 필요 없이, 이 문서 하나로 지금까지 상태를 이해할 수 있도록 정리함. 상세 내용은 각 절에서 링크한 파일 참고.
 
@@ -28,9 +28,11 @@ EDA 심층분석(`eda/deep_dive.py`, [`전처리 및 인사이트.md`](전처리
 
 사용자가 팀 깃헙(`iamdbstjd/LGAIMERS`)의 진행상황(리더보드 1080)을 다시 물어봐서, 저장소를 로컬 clone해서 깊게 검토(Explore 에이전트 활용) — 저장소 자체엔 리더보드 제출 기록이 727.72(E12)뿐이고, 문서화된 가장 좋은 로컬 숫자를 역산해도 ~913 수준이라 1080은 저장소 근거로는 확인 불가(팀원에게 직접 확인 필요 판단). 다만 팀의 E17-A 아이디어(실패유형 reverse/middle/outside hazard의 log-ratio를 잔차 보정 메타피처로 씀)가 우리가 안 써본 축이라는 걸 확인.
 
-사용자가 "코드를 그대로 따라해달라"고 했으나, 대회 규정(§11, V14 사건 이후 확립)상 같은 팀으로 병합 전까지는 다른 팀 코드로 취급해야 해서 **아이디어만 참고하고 코드는 독립적으로 새로 작성**함을 명시하고 진행. `rmo_labels.py`(기존 E002/E003 자산)를 재사용해 R/M/O hazard 서브모델을 만들고 log-ratio 2개를 기존 3-way segment corrector에 메타피처로 추가(**EXPERIMENTS.md E029**): PRIMARY 801.93→811.45(z=1.71), STRESS 755.63→768.56(z=2.01) — 이 세션에서 나온 어떤 신규 실험보다 좋은 결과(STRESS는 실제로 유의). 사용자 요청으로 후속 조정(mr/or 단독, corrector capacity 강화)까지 스윕했으나 원본 조합이 이미 최선이었고 PRIMARY z는 끝내 1.96을 못 넘음 — E021과 동일한 "로컬 두 폴드 신기록, 통계적 유의성 미달" 패턴으로 **최종 기각**. 새 submit.zip은 만들지 않음(이 프로젝트의 zip 정책은 로컬 신기록뿐 아니라 이 세션 내내 지켜온 유의성 기준까지 같이 봐야 한다고 판단).
+사용자가 "코드를 그대로 따라해달라"고 했으나, 대회 규정(§11, V14 사건 이후 확립)상 같은 팀으로 병합 전까지는 다른 팀 코드로 취급해야 해서 **아이디어만 참고하고 코드는 독립적으로 새로 작성**함을 명시하고 진행. `rmo_labels.py`(기존 E002/E003 자산)를 재사용해 R/M/O hazard 서브모델을 만들고 log-ratio 2개를 기존 3-way segment corrector에 메타피처로 추가(**EXPERIMENTS.md E029**): PRIMARY 801.93→811.45(z=1.71), STRESS 755.63→768.56(z=2.01) — 이 세션에서 나온 어떤 신규 실험보다 좋은 결과(STRESS는 실제로 유의). 후속 조정(mr/or 단독, corrector capacity 강화) 스윕에서도 원본 조합이 최선이었고 PRIMARY z는 1.96을 못 넘어 **로컬 기준으로는 기각**이었으나, 사용자가 실제 제출로 검증하길 원해 `submit/v11_rmo_logratio/submit.zip`을 빌드·sanity 확인 후 제출.
 
-유효 champion은 계속 879.80(`submit/v9_segment_corrector/submit.zip`), 변경 없음. 야간 자율 작업 중 시도한 9개(E019~E029) 전부 기각으로 결론. GitHub 저장소는 계속 private 유지(재확인 완료).
+**실제 결과: 911.1890760848 — 879.80 대비 +31.39, 새 champion으로 확정.** 로컬 유의성 미달(E021과 같은 프로필)이었는데도 실LB는 뚜렷하게 개선된 첫 사례 — 상세 분석과 교훈은 아래 "✅ 2026-08-18 새 champion" 절 참고.
+
+유효 champion은 **911.19(`submit/v11_rmo_logratio/submit.zip`)로 갱신**. 야간 자율 작업 중 시도한 9개(E019~E029) 중 8개는 기각, 1개(E029)는 로컬 판정과 달리 실제 채택 — GitHub 저장소는 계속 private 유지(재확인 완료).
 
 ## 대회 개요
 
@@ -58,6 +60,7 @@ Phase2 수료 기준: Public LB 549.51 이상. 데이터 설명서는 [`data/dat
 | 8차 (2026-08-12) | V14(recent shared base + 3-domain residual adapter, v1.1 튜닝) | 2024 시즌(base) + 2024 라벨(residual adapter) — recent-shared-base 철학 | 1032.0064496443 — **🚫 철회함(아래 "V14 철회" 절 참고). 외부 참고자료와의 유사성 문제로 부정 제출 위험 확인돼 철회. 유효 champion 아님.** |
 | 9차 (2026-08-13) | champion CatBoost(789.23, 완전 독립개발) + 3-way segment(core/hybrid/dev) residual corrector(ExtraTrees) | champion은 그대로, corrector만 오프라인 학습 — `submit/v9_segment_corrector/submit.zip` | **879.7995048079 (현재 최선, 유효 champion)** — 789.23 대비 +90.57. 로컬 primary(801.93)보다 실제가 더 높게 나옴(local/actual 정합). V14 코드 재사용 없이 완전 독립 개발, 아키텍처(base+segment residual correction)만 참고하고 구현/segment 기준/하이퍼파라미터는 전부 우리 자체 EDA·검증(`EXPERIMENTS.md` E013, 아래 "E019~E020"). |
 | 10차 (2026-08-13) | CatBoost(0.6)+LightGBM(0.2)+XGBoost(0.2) 가중 블렌드 + 3-way segment corrector | base 3모델 전부 2019~2024 전체 학습 — `submit/v10_multimodel_blend/submit.zip` | **869.7143690742 — 879.80 미달, 채택 안 함.** 로컬은 primary(815.15)/stress(833.05) 두 폴드 다 champion(801.93/755.63)을 이겼는데 실제는 오히려 -10.09 낮음 — **local/actual 재괴리 사례**(6차 hand_matchup과 같은 패턴). 유효 champion은 계속 879.80(9차). 원인 추정: LightGBM/XGBoost가 CatBoost보다 2025 일반화가 약해서, 로컬(2023/2024 검증)에서 잡히는 개선이 진짜 미래 데이터로는 전이가 약함 — 확정 아니고 가설. |
+| 11차 (2026-08-18) | 9차와 동일 base+3-way corrector + R/M/O(reverse/middle/outside) hazard log-ratio 메타피처 2개(`rmo_log_ratio_mr`, `rmo_log_ratio_or`) 추가 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v11_rmo_logratio/submit.zip` | **911.1890760848 (현재 최선, 유효 champion)** — 879.80 대비 **+31.39**. 로컬은 PRIMARY 811.45(z=1.71, 유의기준 미달)/STRESS 768.56(z=2.01, 유의)로 판정이 엇갈렸던 후보(`EXPERIMENTS.md` E029)인데 실제는 뚜렷한 개선으로 확인됨 — **로컬 유의성 미달이 항상 실LB 실패를 뜻하진 않는다**는 반례. 팀 깃헙(iamdbstjd/LGAIMERS) E17-A 아이디어(실패유형 hazard의 log-ratio를 메타피처로)를 코드는 가져오지 않고 아이디어만 참고해 독립 재구현. |
 
 **hand_matchup 최종 판정**: 제출 모델로는 채택 안 함(789.23 유지). 다만 "선수별 조건부 이력 정보"라는 가설 자체를 검증하려고 STEP 1(platoon feature) 4개를 독립적으로 테스트함 — A: pitcher_vs_current_batter_hand_rate 724.39(-10.10), B: batter_vs_current_pitcher_hand_rate 678.90(-55.59), C: pitcher_platoon_advantage 734.33(-0.16), D: batter_platoon_advantage 703.55(-30.94). 전부 baseline 미달로 **platoon 방향도 종료**. hand_matchup의 로컬 개선이 실제 LB로 이어지지 않은 것과 별개로, platoon 자체도 로컬에서부터 신호가 없었음(코드: [`platoon_features.py`](../modeling/platoon_features.py), [`platoon_ablation.py`](../modeling/platoon_ablation.py)).
 
@@ -104,7 +107,32 @@ script.py 출력이 정확히 일치함을 확인함.
 실제는 -10.09 낮은 **local/actual 재괴리 사례**(6차 hand_matchup과 같은 패턴 — 로컬 rolling OOT가
 2025 일반화를 완벽히 대변하지 못함). **유효 champion은 계속 879.80(9차, `submit/v9_segment_corrector/submit.zip`)이고, 이 멀티모델 블렌드는 기각한다.**
 
-## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80이 최신
+## ✅ 2026-08-18 새 champion — 911.1890760848 (R/M/O hazard log-ratio 메타피처)
+
+879.80 champion(9차)과 완전히 같은 base+3-way corrector 구조에, R/M/O(reverse/middle/outside)
+hazard 서브모델의 실패유형 log-ratio 2개(`rmo_log_ratio_mr`, `rmo_log_ratio_or`)를 corrector 입력
+피처에 추가한 것(`EXPERIMENTS.md` E029). 아이디어 출처는 팀 깃헙(iamdbstjd/LGAIMERS, 사용자 확인상
+같은 팀이나 DACON 공식 병합 전까지는 대회 규정 §11에 따라 다른 팀으로 취급 — 코드/하이퍼파라미터는
+가져오지 않고, "실패 유형 예측값이 아니라 유형 간 비율을 메타피처로 쓴다"는 아이디어만 참고해서
+이 프로젝트 자체 자산(`rmo_labels.py`, E002/E003)으로 독립 재구현·검증함.
+
+로컬 dual-fold 결과는 애매했다 — PRIMARY 801.93→811.45(**z=1.71, 이 세션이 지켜온 유의 기준
+z≈1.96 미달**), STRESS 755.63→768.56(z=2.01, 유의). "두 폴드 다 유의해야 채택"이라는 이 세션의
+원칙(E021 기각 근거)을 엄격 적용하면 로컬 기준으로는 기각감이었으나, 사용자가 실제 제출로 직접
+검증하길 원해 배포 패키지(`submit/v11_rmo_logratio/submit.zip`)를 빌드하고 sanity 확인 후 제출.
+
+**실제 제출 결과(11차, 2026-08-18): 911.1890760848 — 879.80 대비 +31.39, 새 champion.**
+**중요한 교훈**: 이 세션 내내 "로컬 두 폴드 다 통계적으로 유의해야 실제로도 통한다"는 원칙을
+지켜왔고(E021, E029 최초 판단 모두 이 원칙으로 기각), hand_matchup(6차)·멀티모델 블렌드(10차)처럼
+"로컬은 이겼지만 통계 검증이 약한 후보는 실LB에서 진다"는 전례가 반복돼서 그 원칙이 강화돼 왔는데,
+이번엔 그 원칙이 틀렸다 — 로컬 유의성 미달(PRIMARY z=1.71)에도 실LB는 뚜렷하게 개선됐다. 사후적으로
+추정되는 차이점: hand_matchup/멀티모델 블렌드는 "PRIMARY도 STRESS도 로컬에서 유의하지 않았거나
+아예 실패했던" 케이스였는데, 이번엔 STRESS는 실제로 유의했고 PRIMARY만 근소하게 못 미쳤다 — 즉
+"두 폴드 다 유의"가 아니라 "최소 한 폴드는 확실히 유의 + 다른 폴드도 방향은 같고 근소한 차이"
+정도면 실제로 전이될 수 있다는 뜻일 수 있다(표본 하나로 결론 내리긴 이르고, 다음 후보 판단 시
+참고할 것).
+
+## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80/911.19가 최신
 
 - 위치: [`modeling/baseline_catboost.py`](../modeling/baseline_catboost.py) + [`modeling/baseline_catboost.ipynb`](../modeling/baseline_catboost.ipynb)
 - 레시피: CatBoost, raw 44피처(전처리 없음, 결측치 네이티브 처리), `depth=6, learning_rate=0.05, l2_leaf_reg=15`, iterations는 2019-23→24 검증에서 찾은 값(204)으로 2019~2024 전체 재학습
