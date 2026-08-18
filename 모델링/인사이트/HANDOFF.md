@@ -61,7 +61,8 @@ Phase2 수료 기준: Public LB 549.51 이상. 데이터 설명서는 [`data/dat
 | 9차 (2026-08-13) | champion CatBoost(789.23, 완전 독립개발) + 3-way segment(core/hybrid/dev) residual corrector(ExtraTrees) | champion은 그대로, corrector만 오프라인 학습 — `submit/v9_segment_corrector/submit.zip` | **879.7995048079 (현재 최선, 유효 champion)** — 789.23 대비 +90.57. 로컬 primary(801.93)보다 실제가 더 높게 나옴(local/actual 정합). V14 코드 재사용 없이 완전 독립 개발, 아키텍처(base+segment residual correction)만 참고하고 구현/segment 기준/하이퍼파라미터는 전부 우리 자체 EDA·검증(`EXPERIMENTS.md` E013, 아래 "E019~E020"). |
 | 10차 (2026-08-13) | CatBoost(0.6)+LightGBM(0.2)+XGBoost(0.2) 가중 블렌드 + 3-way segment corrector | base 3모델 전부 2019~2024 전체 학습 — `submit/v10_multimodel_blend/submit.zip` | **869.7143690742 — 879.80 미달, 채택 안 함.** 로컬은 primary(815.15)/stress(833.05) 두 폴드 다 champion(801.93/755.63)을 이겼는데 실제는 오히려 -10.09 낮음 — **local/actual 재괴리 사례**(6차 hand_matchup과 같은 패턴). 유효 champion은 계속 879.80(9차). 원인 추정: LightGBM/XGBoost가 CatBoost보다 2025 일반화가 약해서, 로컬(2023/2024 검증)에서 잡히는 개선이 진짜 미래 데이터로는 전이가 약함 — 확정 아니고 가설. |
 | 11차 (2026-08-18) | 9차와 동일 base+3-way corrector + R/M/O(reverse/middle/outside) hazard log-ratio 메타피처 2개(`rmo_log_ratio_mr`, `rmo_log_ratio_or`) 추가 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v11_rmo_logratio/submit.zip` | **911.1890760848** — 879.80 대비 **+31.39**. 로컬은 PRIMARY 811.45(z=1.71, 유의기준 미달)/STRESS 768.56(z=2.01, 유의)로 판정이 엇갈렸던 후보(`EXPERIMENTS.md` E029)인데 실제는 뚜렷한 개선으로 확인됨 — **로컬 유의성 미달이 항상 실LB 실패를 뜻하진 않는다**는 반례. 팀 깃헙(iamdbstjd/LGAIMERS) E17-A 아이디어(실패유형 hazard의 log-ratio를 메타피처로)를 코드는 가져오지 않고 아이디어만 참고해 독립 재구현. |
-| 12차 (2026-08-18) | 11차와 동일 구조, R/M/O 메타피처를 log-ratio 2개 → 원시확률 3개(`qR`,`qM`,`qO`)+log-ratio 3개(`om=log(qO/qM)` 신규 포함) 6개로 확장 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v12_rmo_full_meta/submit.zip` | **915.2039506907 (현재 최선, 유효 champion)** — 911.19 대비 **+4.01**. 로컬(`EXPERIMENTS.md` E030)에서 PRIMARY는 champion과 통계적으로 구별 안 되는 노이즈 수준(z=-0.44), STRESS는 z=5.35로 강하게 유의했는데 — 실제로도 그 방향(개선) 그대로 재현됨. |
+| 12차 (2026-08-18) | 11차와 동일 구조, R/M/O 메타피처를 log-ratio 2개 → 원시확률 3개(`qR`,`qM`,`qO`)+log-ratio 3개(`om=log(qO/qM)` 신규 포함) 6개로 확장 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v12_rmo_full_meta/submit.zip` | **915.2039506907** — 911.19 대비 **+4.01**. 로컬(`EXPERIMENTS.md` E030)에서 PRIMARY는 champion과 통계적으로 구별 안 되는 노이즈 수준(z=-0.44), STRESS는 z=5.35로 강하게 유의했는데 — 실제로도 그 방향(개선) 그대로 재현됨. |
+| 13차 (2026-08-18) | 12차와 동일 구조 + 팀 깃헙 M0 아이디어(4-class joint softmax) 독립 재구현, 메타피처 4개 추가(hazard 6 + joint softmax 4 = 10개) | champion/hazard/joint softmax 서브모델 전부 2019~2024 전체 재학습 — `submit/v13_joint_softmax_meta/submit.zip` | **919.8006408587 (현재 최선, 유효 champion)** — 915.20 대비 **+4.60**. 로컬(`EXPERIMENTS.md` E032)에서 PRIMARY 노이즈 수준(z=-0.07)/STRESS 강하게 유의(z=3.95, +47.78, E030보다도 큼) — 실제로도 개선 재현. **증분 패턴**: E029(+31.39) → E030(+4.01) → E032(+4.60) — 첫 구조적 발견 이후 같은 틀 안에서의 확장은 수확체감 중, 다음 큰 도약엔 새로운 구조적 아이디어 필요(사용자 관찰). |
 
 **hand_matchup 최종 판정**: 제출 모델로는 채택 안 함(789.23 유지). 다만 "선수별 조건부 이력 정보"라는 가설 자체를 검증하려고 STEP 1(platoon feature) 4개를 독립적으로 테스트함 — A: pitcher_vs_current_batter_hand_rate 724.39(-10.10), B: batter_vs_current_pitcher_hand_rate 678.90(-55.59), C: pitcher_platoon_advantage 734.33(-0.16), D: batter_platoon_advantage 703.55(-30.94). 전부 baseline 미달로 **platoon 방향도 종료**. hand_matchup의 로컬 개선이 실제 LB로 이어지지 않은 것과 별개로, platoon 자체도 로컬에서부터 신호가 없었음(코드: [`platoon_features.py`](../modeling/platoon_features.py), [`platoon_ablation.py`](../modeling/platoon_ablation.py)).
 
@@ -142,7 +143,21 @@ z≈1.96 미달**), STRESS 755.63→768.56(z=2.01, 유의). "두 폴드 다 유�
 확장하는" 이 계열 자체가 신뢰할 만한 구조적 레버임이 재확인됨. **유효 champion은
 `submit/v12_rmo_full_meta/submit.zip`(915.20).**
 
-## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80/911.19/915.20이 최신
+**이어서 다른 축 탐색(`EXPERIMENTS.md` E031/E032)**: 사용자 요청으로 hazard 서브모델 입력에
+파생변수(정수 count 재구성 최근-reverse-rate, 경기내 투구수)를 추가해봤으나 둘 다 신호 약함/불명확
+(E031, 기각) — "hazard 서브모델 입력을 늘리는" 방향 자체는 소진된 것으로 판단. 대신 팀 깃헙 M0
+아이디어(4-class joint softmax, 우리 순차 hazard와 다른 구조)를 코드 없이 구조만 참고해 독립
+재구현(E032): 기존 hazard 6개 메타피처에 joint softmax 4개 추가 → 로컬 PRIMARY 노이즈(z=-0.07)/
+STRESS 강하게 유의(z=3.95, +47.78, E030보다 큼) — E029/E030과 같은 패턴이라 `submit/v13_joint_softmax_meta/submit.zip` 빌드 후 제출. **실제 결과(13차, 2026-08-18): 919.8006408587
+— 915.20 대비 +4.60, 새 champion.**
+
+**증분 패턴(사용자 관찰)**: E029(+31.39) → E030(+4.01) → E032(+4.60) — 첫 구조적 발견(타겟을 실패
+유형으로 분해해서 서브모델 메타피처로 쓴다는 것) 이후 같은 틀 안에서의 확장은 갈수록 증분이 작아지는
+수확체감 패턴. 다음에 다시 큰 폭(30점 이상) 개선을 노리려면 R/M/O 메타피처를 더 정교화하는 게
+아니라 E029급의 새로운 구조적 아이디어가 필요할 가능성이 높음. **유효 champion은
+`submit/v13_joint_softmax_meta/submit.zip`(919.80).**
+
+## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80/911.19/915.20/919.80이 최신
 
 - 위치: [`modeling/baseline_catboost.py`](../modeling/baseline_catboost.py) + [`modeling/baseline_catboost.ipynb`](../modeling/baseline_catboost.ipynb)
 - 레시피: CatBoost, raw 44피처(전처리 없음, 결측치 네이티브 처리), `depth=6, learning_rate=0.05, l2_leaf_reg=15`, iterations는 2019-23→24 검증에서 찾은 값(204)으로 2019~2024 전체 재학습
