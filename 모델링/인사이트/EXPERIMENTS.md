@@ -377,3 +377,16 @@ E021(hand_matchup 라우팅)이 유의하지 않았던 이유가 "pitcher_hand/b
 | uncertainty: smoothed_rate로 raw rate 대체 | 734.49 | 710.93(44+2) | **701.73**(44개) |
 
 **기각, 그것도 "추가"보다 더 나쁘게.** 특히 diff+mean 교체 케이스는 `asof_pitcher_success_rate`/`asof_batter_success_rate` 2차원을 산술적으로 정보 손실 없는 45도 회전(diff=p-b, mean=(p+b)/2 → p=mean+diff/2, b=mean-diff/2로 완전 복원 가능)으로만 바꾼 건데도 708.79로 원본 축(734.49)보다 -25.70 나빴다. 즉 "정보량은 그대로인데 축만 회전시켜도" 트리 모델에는 손해다 — CatBoost의 축-평행 분기가 원본 축(투수 rate, 타자 rate 각각의 독립적인 marginal 효과)에서 이미 효율적으로 신호를 찾고 있었는데, 회전된 축(차이/평균)으로는 그 각각의 marginal 효과를 다시 재구성해야 해서 오히려 더 비효율적이 된 것으로 해석된다. **결론: 원본을 지우는 것 자체가 항상 정보 손실이 없어도 손해 — CatBoost에게는 "원본 축을 그대로 준다"는 것 자체가 이미 최적에 가까운 선택이었다.**
+
+## E029 (2026-08-15) — R/M/O hazard의 실패유형 log-ratio를 corrector 메타피처로 추가 (`개발/v3_domain_experiments/segment_corrector_rmo_logratio_feature.py`) — 이 세션 최고 성적이지만 기준 미달, 보류
+
+팀 깃헙 E17-A의 아이디어(실패 유형 reverse/middle/outside를 hazard 서브모델로 예측한 뒤, 예측값 자체가 아니라 "실패 유형 간 비율"을 메타피처로 쓴다)를 코드는 그대로 안 가져오고 아이디어만 참고해서 독립 재구현(대회 규정 §11 원칙). R/M/O 라벨은 이미 있는 `rmo_labels.py`(E002/E003에서 leak-safe 검증됨) 그대로 재사용, hazard 서브모델은 champion과 같은 CatBoost(44피처, train_df로만 학습), `rmo_log_ratio_mr = log((qM+eps)/(qR+eps))`, `rmo_log_ratio_or = log((qO+eps)/(qR+eps))` 2개를 만들어 기존 3-way corrector의 입력 피처(44개)에 추가.
+
+| | 기존 3-way(메타피처 없음) | +log-ratio 메타피처 2개 | 차이 | pitcher-bootstrap z |
+|---|---:|---:|---:|---:|
+| PRIMARY | 801.93 | 811.45 | +9.52 | 1.71 |
+| STRESS | 755.63 | 768.56 | +12.93 | **2.01** |
+
+**이 세션에서 나온 어떤 신규 피처/라우팅 실험보다도 좋은 결과다** — 두 폴드 다 개선했고, STRESS는 관례적 유의 기준(z≈1.96)을 실제로 넘었다(E021의 z=1.51/1.13, E025의 z=-2.28~-3.91과 비교해보면 확실히 다른 급). 다만 **PRIMARY가 z=1.71로 기준에 살짝 못 미친다** — 이 프로젝트가 지금까지 지켜온 "두 폴드 다 유의해야 채택" 기준(E021 기각 근거와 동일선상)을 엄격히 적용하면 아직 채택 기준 미달이다.
+
+**보류(기각 아님) 처리한 이유**: (1) `segment_corrector_base_pred_feature.py`(보조 정보를 corrector 피처에 추가하는 같은 카테고리)가 이전에 stress -34.45로 실패한 전례가 있는데, 이번엔 오히려 두 폴드 다 개선이라 그 실패 패턴과는 다르다. (2) hand_matchup(E021)이나 importance 변수(E025)와 달리 "실패 유형의 구성비"라는, 이전에 corrector에 넣어본 적 없는 새로운 정보축이다. (3) z=1.71은 완전히 무의미한 수준(예: E025의 유의하게 나쁜 음수 z)과는 다르고, PRIMARY 쪽 표본이 커서(수십만 행) 재현성 자체는 상대적으로 안정적일 가능성이 있다. **다음 단계로 남겨둠**: eps 값 스윕, log_ratio_or만 단독으로 넣어보기, corrector capacity(min_samples_leaf 등) 재조정 후 재검증 등으로 primary z를 유의 기준까지 끌어올릴 수 있는지 확인 — 그래도 안 넘으면 이 세션의 다른 사례들과 마찬가지로 최종 기각.

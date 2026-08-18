@@ -1,0 +1,14 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  기존 3-way corrector(메타피처 없음): 801.93
+  + R/M/O log-ratio 메타피처: 811.45  차이=+9.52
+  pitcher-bootstrap: mean_d=0.000024  z=1.71
+
+===== STRESS: <2023 -> 2023 =====
+  기존 3-way corrector(메타피처 없음): 755.63
+  + R/M/O log-ratio 메타피처: 768.56  차이=+12.93
+  pitcher-bootstrap: mean_d=0.000032  z=2.01
+
+===== 요약 =====
+PRIMARY: 801.93 -> 811.45 (+9.52, z=1.71)
+STRESS:  755.63 -> 768.56 (+12.93, z=2.01)
