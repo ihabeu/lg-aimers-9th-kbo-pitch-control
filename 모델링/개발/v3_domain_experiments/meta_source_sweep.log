@@ -1,0 +1,32 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  캐싱 단계: hazard 계열별 예측값 한 번씩만 fit...
+  다양성 진단 (corr with CatBoost qR/qM/qO, 참고: control_success 기준 LightGBM은 0.9996):
+    LightGBM: qR=0.8757  qM=0.7873  qO=0.9558
+    Ridge: qR=0.5987  qM=0.6896  qO=0.7971
+    Lasso: qR=0.5982  qM=0.6884  qO=0.7980
+
+  조합 스윕 (재학습 없이 corrector만 다시 fit):
+    [champion(CatBoost hazard6 + joint4)] 817.64  (기준)
+    [+LightGBM hazard(mr,or,om)] 815.14  차이=-2.50  z=-0.56
+    [+Ridge hazard(mr,or,om)] 814.66  차이=-2.98  z=-0.70
+    [+Lasso hazard(mr,or,om)] 817.12  차이=-0.52  z=-0.12
+
+===== STRESS: <2023 -> 2023 =====
+  캐싱 단계: hazard 계열별 예측값 한 번씩만 fit...
+  다양성 진단 (corr with CatBoost qR/qM/qO, 참고: control_success 기준 LightGBM은 0.9996):
+    LightGBM: qR=0.8707  qM=0.6476  qO=0.9539
+    Ridge: qR=0.8321  qM=0.6348  qO=0.8880
+    Lasso: qR=0.8331  qM=0.6350  qO=0.8886
+
+  조합 스윕 (재학습 없이 corrector만 다시 fit):
+    [champion(CatBoost hazard6 + joint4)] 848.71  (기준)
+    [+LightGBM hazard(mr,or,om)] 854.25  차이=+5.55  z=0.94
+    [+Ridge hazard(mr,or,om)] 857.03  차이=+8.32  z=1.82
+    [+Lasso hazard(mr,or,om)] 859.60  차이=+10.89  z=2.15
+
+===== 요약 =====
+  [champion(CatBoost hazard6 + joint4)] PRIMARY 817.64  STRESS 848.71
+  [+LightGBM hazard(mr,or,om)] PRIMARY 815.14  STRESS 854.25
+  [+Ridge hazard(mr,or,om)] PRIMARY 814.66  STRESS 857.03
+  [+Lasso hazard(mr,or,om)] PRIMARY 817.12  STRESS 859.60

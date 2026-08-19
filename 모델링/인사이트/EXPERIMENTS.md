@@ -470,3 +470,22 @@ E031에서 "hazard 서브모델 입력을 늘리는" 방향이 안 통한다는 
 **실제 제출 결과(2026-08-18): Public LB 919.8006408587 — v12(915.20) 대비 +4.60, 새 champion.** `submit/v13_joint_softmax_meta/submit.zip`이 새 유효 champion.
 
 **증분 패턴 정리 (사용자 관찰)**: E029(+31.39) → E030(+4.01) → E032(+4.60). 첫 구조적 발견(타겟을 실패유형으로 분해해서 서브모델 메타피처로 쓴다는 것 자체)이 압도적으로 큰 한 번의 도약이었고, 그 이후 같은 틀 안에서의 확장(메타피처 개수 늘리기, 서브모델 구조 바꾸기)은 갈수록 증분이 작아지고 있다 — 전형적인 수확체감 패턴. 다음에 다시 큰 폭(30점 이상) 개선을 노리려면 "R/M/O 메타피처를 조금 더 정교하게"가 아니라, E029급의 새로운 구조적 아이디어(타겟을 또 다른 방식으로 분해하거나, corrector가 아닌 다른 층위를 바꾸는 것)가 필요할 가능성이 높다.
+
+## E033 (2026-08-19) — hazard 서브모델을 "다른 알고리즘"으로도 만들어서 다양성/조합 확인 (`개발/v3_domain_experiments/hazard_lightgbm_diversity_check.py`, `segment_corrector_meta_source_sweep.py`) — Lasso hazard가 champion(919.80)과 같은 승리 패턴
+
+사용자 제안 방법론 적용: 비싼 fit(hazard 계열 여러 개)은 폴드당 한 번씩만 캐싱하고, 그 위에서 corrector 조합만 재학습 없이 싸게 스윕. "모델을 바꾸든 섞든 다 해봐" 요청으로 hazard 서브모델(reverse/middle/outside)을 CatBoost 외에 LightGBM/Ridge(L2 로지스틱)/Lasso(L1 로지스틱)로도 만들어봄.
+
+**1) 다양성 진단**: E026은 control_success(메인 타겟) 기준 LightGBM-CatBoost residual 상관이 0.9996(사실상 동일 판단)이었는데, R/M/O(서브 타겟) 기준으로는 확연히 낮다 — LightGBM qR/qM/qO 상관 0.65~0.96, Ridge/Lasso는 더 낮은 0.60~0.89. 메인 타겟에서는 CatBoost로 수렴하던 대체 모델들이, 실패유형이라는 다른 타겟에서는 실제로 다르게 학습하고 있다는 뜻.
+
+**2) 조합 스윕** (champion=CatBoost hazard 6개+joint softmax 4개, 각 대체 모델의 mr/or/om 3개를 추가):
+
+| 조합 | PRIMARY (z) | STRESS (z) |
+|---|---:|---:|
+| champion(기준) | 817.64 | 848.71 |
+| +LightGBM hazard | 815.14 (z=-0.56) | 854.25 (z=0.94) |
+| +Ridge hazard | 814.66 (z=-0.70) | 857.03 (z=1.82) |
+| **+Lasso hazard** | 817.12 (**z=-0.12, 노이즈 수준**) | **859.60 (z=2.15, 유의)** |
+
+**Lasso가 E029/E030/E032와 완전히 같은 승리 패턴** — PRIMARY는 champion과 통계적으로 구별 안 되고(z=-0.12), STRESS는 유의 기준(z≈1.96)을 실제로 넘었다(z=2.15). Ridge도 근접(z=1.82)했지만 못 넘었고, LightGBM은 상관관계가 상대적으로 덜 낮아서인지 STRESS도 유의하지 않았다(z=0.94) — 선형모델(Ridge/Lasso)이 트리 계열(CatBoost/LightGBM)보다 이 R/M/O 타겟에서 더 이질적인 정보를 주는 것으로 해석된다. Lasso(L1, 희소성)가 Ridge(L2)보다 근소하게 더 좋은 것도 일관됨.
+
+**배포**: `submit/v14_lasso_hazard_meta/submit.zip` 빌드 예정.
