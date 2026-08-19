@@ -63,7 +63,7 @@ Phase2 수료 기준: Public LB 549.51 이상. 데이터 설명서는 [`data/dat
 | 11차 (2026-08-18) | 9차와 동일 base+3-way corrector + R/M/O(reverse/middle/outside) hazard log-ratio 메타피처 2개(`rmo_log_ratio_mr`, `rmo_log_ratio_or`) 추가 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v11_rmo_logratio/submit.zip` | **911.1890760848** — 879.80 대비 **+31.39**. 로컬은 PRIMARY 811.45(z=1.71, 유의기준 미달)/STRESS 768.56(z=2.01, 유의)로 판정이 엇갈렸던 후보(`EXPERIMENTS.md` E029)인데 실제는 뚜렷한 개선으로 확인됨 — **로컬 유의성 미달이 항상 실LB 실패를 뜻하진 않는다**는 반례. 팀 깃헙(iamdbstjd/LGAIMERS) E17-A 아이디어(실패유형 hazard의 log-ratio를 메타피처로)를 코드는 가져오지 않고 아이디어만 참고해 독립 재구현. |
 | 12차 (2026-08-18) | 11차와 동일 구조, R/M/O 메타피처를 log-ratio 2개 → 원시확률 3개(`qR`,`qM`,`qO`)+log-ratio 3개(`om=log(qO/qM)` 신규 포함) 6개로 확장 | champion/hazard 서브모델 전부 2019~2024 전체 재학습 — `submit/v12_rmo_full_meta/submit.zip` | **915.2039506907** — 911.19 대비 **+4.01**. 로컬(`EXPERIMENTS.md` E030)에서 PRIMARY는 champion과 통계적으로 구별 안 되는 노이즈 수준(z=-0.44), STRESS는 z=5.35로 강하게 유의했는데 — 실제로도 그 방향(개선) 그대로 재현됨. |
 | 13차 (2026-08-18) | 12차와 동일 구조 + 팀 깃헙 M0 아이디어(4-class joint softmax) 독립 재구현, 메타피처 4개 추가(hazard 6 + joint softmax 4 = 10개) | champion/hazard/joint softmax 서브모델 전부 2019~2024 전체 재학습 — `submit/v13_joint_softmax_meta/submit.zip` | **919.8006408587** — 915.20 대비 **+4.60**. 로컬(`EXPERIMENTS.md` E032)에서 PRIMARY 노이즈 수준(z=-0.07)/STRESS 강하게 유의(z=3.95, +47.78, E030보다도 큼) — 실제로도 개선 재현. **증분 패턴**: E029(+31.39) → E030(+4.01) → E032(+4.60) — 첫 구조적 발견 이후 같은 틀 안에서의 확장은 수확체감 중, 다음 큰 도약엔 새로운 구조적 아이디어 필요(사용자 관찰). |
-| 14차 (2026-08-19, 제출 대기) | 13차와 동일 구조 + Lasso(L1 로지스틱) hazard 서브모델 log-ratio 3개 추가(메타피처 총 13개) — "모델을 바꾸든 섞든" 요청으로 LightGBM/Ridge/Lasso를 hazard 서브모델로도 만들어 비교(E033), 메인 타겟에서는 CatBoost와 거의 동일했던 LightGBM이 R/M/O 서브 타겟에서는 상관 0.65~0.96, Ridge/Lasso는 0.60~0.89로 더 이질적임을 확인 | champion/hazard/joint softmax/Lasso 서브모델 전부 2019~2024 전체 재학습 — `submit/v14_lasso_hazard_meta/submit.zip` | 로컬(E033) PRIMARY 노이즈(z=-0.12)/STRESS 유의(z=2.15, +10.89) — E029/E030/E032와 같은 패턴. **제출 대기.** |
+| 14차 (2026-08-19) | 13차와 동일 구조 + Lasso(L1 로지스틱) hazard 서브모델 log-ratio 3개 추가(메타피처 총 13개) — "모델을 바꾸든 섞든" 요청으로 LightGBM/Ridge/Lasso를 hazard 서브모델로도 만들어 비교(E033), 메인 타겟에서는 CatBoost와 거의 동일했던 LightGBM이 R/M/O 서브 타겟에서는 상관 0.65~0.96, Ridge/Lasso는 0.60~0.89로 더 이질적임을 확인 | champion/hazard/joint softmax/Lasso 서브모델 전부 2019~2024 전체 재학습 — `submit/v14_lasso_hazard_meta/submit.zip` | **938.9722770746 (현재 최선, 유효 champion)** — 919.80 대비 **+19.17**. 로컬(E033) PRIMARY 노이즈(z=-0.12)/STRESS 유의(z=2.15, +10.89)로 E029/E030/E032와 같은 패턴이었는데, 실제 개선폭은 E030(+4.01)/E032(+4.60)보다 훨씬 컸다 — **"메타피처를 더 늘리는" 것보다 "메타피처 소스 자체(다른 알고리즘)를 다양화하는" 게 더 큰 정보였다는 뜻.** 수확체감이 단조롭지 않다는 반례. |
 
 **hand_matchup 최종 판정**: 제출 모델로는 채택 안 함(789.23 유지). 다만 "선수별 조건부 이력 정보"라는 가설 자체를 검증하려고 STEP 1(platoon feature) 4개를 독립적으로 테스트함 — A: pitcher_vs_current_batter_hand_rate 724.39(-10.10), B: batter_vs_current_pitcher_hand_rate 678.90(-55.59), C: pitcher_platoon_advantage 734.33(-0.16), D: batter_platoon_advantage 703.55(-30.94). 전부 baseline 미달로 **platoon 방향도 종료**. hand_matchup의 로컬 개선이 실제 LB로 이어지지 않은 것과 별개로, platoon 자체도 로컬에서부터 신호가 없었음(코드: [`platoon_features.py`](../modeling/platoon_features.py), [`platoon_ablation.py`](../modeling/platoon_ablation.py)).
 
@@ -152,13 +152,19 @@ z≈1.96 미달**), STRESS 755.63→768.56(z=2.01, 유의). "두 폴드 다 유�
 STRESS 강하게 유의(z=3.95, +47.78, E030보다 큼) — E029/E030과 같은 패턴이라 `submit/v13_joint_softmax_meta/submit.zip` 빌드 후 제출. **실제 결과(13차, 2026-08-18): 919.8006408587
 — 915.20 대비 +4.60, 새 champion.**
 
-**증분 패턴(사용자 관찰)**: E029(+31.39) → E030(+4.01) → E032(+4.60) — 첫 구조적 발견(타겟을 실패
-유형으로 분해해서 서브모델 메타피처로 쓴다는 것) 이후 같은 틀 안에서의 확장은 갈수록 증분이 작아지는
-수확체감 패턴. 다음에 다시 큰 폭(30점 이상) 개선을 노리려면 R/M/O 메타피처를 더 정교화하는 게
-아니라 E029급의 새로운 구조적 아이디어가 필요할 가능성이 높음. **유효 champion은
-`submit/v13_joint_softmax_meta/submit.zip`(919.80).**
+**증분 패턴(사용자 관찰, 그러나 반례 발생)**: E029(+31.39) → E030(+4.01) → E032(+4.60)까지는 수확체감
+패턴으로 보였다 — 같은 R/M/O 서브모델 틀 안에서 메타피처 "개수"만 늘리는 확장은 갈수록 증분이
+작아졌다. 그런데 사용자 요청("모델을 바꾸든 섞든 다 해봐")으로 **메타피처를 늘리는 대신 메타피처
+소스 자체(알고리즘)를 다양화**하자 다시 큰 폭으로 뛰었다 — hazard 서브모델을 CatBoost 외
+LightGBM/Ridge/Lasso로도 만들어보니, 메인 타겟에서는 CatBoost와 사실상 동일했던 대체 모델들이
+R/M/O 서브 타겟에서는 실제로 다르게 학습하고 있었다(E033, 상관 0.60~0.96). Lasso hazard를
+추가(v14) → **실제 LB 938.9722770746, 919.80 대비 +19.17** — E030/E032보다 훨씬 큰 도약.
+**결론: "수확체감"은 같은 종류의 확장(메타피처 개수)에서만 성립했고, 정보원의 종류(알고리즘)를
+바꾸는 축은 아직 소진되지 않았다.** 다음 방향도 이 축(XGBoost/순수 로지스틱/MLP/LSTM hazard,
+Trackman을 hazard 입력으로) 계속 탐색 중. **유효 champion은
+`submit/v14_lasso_hazard_meta/submit.zip`(938.97).**
 
-## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80/911.19/915.20/919.80이 최신
+## 현재 최선 모델 — 이전 champion(789.23) 기록용, 위 879.80/911.19/915.20/919.80/938.97이 최신
 
 - 위치: [`modeling/baseline_catboost.py`](../modeling/baseline_catboost.py) + [`modeling/baseline_catboost.ipynb`](../modeling/baseline_catboost.ipynb)
 - 레시피: CatBoost, raw 44피처(전처리 없음, 결측치 네이티브 처리), `depth=6, learning_rate=0.05, l2_leaf_reg=15`, iterations는 2019-23→24 검증에서 찾은 값(204)으로 2019~2024 전체 재학습
