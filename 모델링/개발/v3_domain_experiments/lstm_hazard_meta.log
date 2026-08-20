@@ -1,0 +1,30 @@
+윈도우 빌드 중...
+seqs shape=(1475092, 10, 44) (2.60 GB)
+
+===== PRIMARY: <2024 -> 2024 =====
+  캐싱: champion 메타피처(CatBoost hazard6 + joint4 + Lasso3)...
+  champion(v14, 메타피처 13개): 781.94  (기준)
+  LSTM hazard 3단계 학습...
+    reverse_label: train n=1220473
+    (마지막 epoch loss=0.51643)
+    middle_label: train n=945730
+    (마지막 epoch loss=0.40307)
+    outside_label: train n=811694
+    (마지막 epoch loss=0.49051)
+  +LSTM hazard: 787.90  차이=+5.96  z=1.71
+
+===== STRESS: <2023 -> 2023 =====
+  캐싱: champion 메타피처(CatBoost hazard6 + joint4 + Lasso3)...
+  champion(v14, 메타피처 13개): 848.35  (기준)
+  LSTM hazard 3단계 학습...
+    reverse_label: train n=975130
+    (마지막 epoch loss=0.50453)
+    middle_label: train n=763151
+    (마지막 epoch loss=0.39517)
+    outside_label: train n=658334
+    (마지막 epoch loss=0.49074)
+  +LSTM hazard: 844.84  차이=-3.51  z=-0.74
+
+===== 요약 =====
+PRIMARY: champion 781.94 -> +LSTM hazard 787.90 (z=1.71)
+STRESS:  champion 848.35 -> +LSTM hazard 844.84 (z=-0.74)
