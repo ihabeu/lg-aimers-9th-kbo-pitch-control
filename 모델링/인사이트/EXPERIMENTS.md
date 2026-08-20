@@ -491,3 +491,18 @@ E031에서 "hazard 서브모델 입력을 늘리는" 방향이 안 통한다는 
 **배포**: `submit/v14_lasso_hazard_meta/submit.zip` 빌드, sanity(빌드시점 5행 재현값과 격리 환경 재실행 결과 일치) 확인 완료.
 
 **실제 제출 결과(2026-08-19): Public LB 938.9722770746 — v13(919.80) 대비 +19.17, 새 champion.** E030(+4.01)/E032(+4.60)보다 훨씬 큰 도약 — "메타피처 개수를 늘리는" 확장이 아니라 "서로 다른 알고리즘(트리 vs 선형모델)이 같은 타겟에서도 진짜 다른 정보를 준다"는 축이 새로운 정보원이었다는 뜻. 사용자가 관찰했던 수확체감 패턴(E029 +31.39 → E030 +4.01 → E032 +4.60)이 계속 단조감소하는 게 아니라, "메타피처 소스 자체를 다양화"하면 다시 큰 폭 개선이 가능함을 보여주는 반례 — "모델을 바꾸든 섞든" 방향이 이 세션에서 가장 생산적인 다음 레버였다.
+
+## E034 (2026-08-19/20) — hazard 서브모델을 XGBoost/순수 로지스틱/MLP로도 확장 (`개발/v3_domain_experiments/segment_corrector_meta_source_sweep_v2.py`) — 셋 다 기각
+
+E033(LightGBM/Ridge/Lasso)에 이어 "모델을 바꾸든 섞든" 계속 탐색. champion(v14, 메타피처 13개: CatBoost hazard 6 + joint softmax 4 + Lasso hazard 3) 위에 XGBoost/순수 로지스틱(정규화 없음)/MLP(hidden=64,32, alpha=1e-3 L2) hazard의 log-ratio 3개씩을 추가로 테스트.
+
+| 조합 | PRIMARY (z) | STRESS (z) |
+|---|---:|---:|
+| champion(기준) | 816.57 | 859.01 |
+| +XGBoost hazard | 813.35 (z=-0.96) | 850.20 (z=-1.78) |
+| +순수 로지스틱 hazard | 809.94 (z=-1.91) | 854.36 (z=-0.96) |
+| +MLP hazard | 810.85 (z=-1.63) | 859.35 (z=0.07, 거의 그대로) |
+
+**셋 다 기각.** PRIMARY는 전부 유의하게 나빠졌고(z<0), STRESS도 개선이 없거나(MLP만 거의 0) 오히려 나빠졌다(XGBoost, 순수 로지스틱). E033에서 Lasso/Ridge가 통했던 것과 대조적 — 부스팅 계열(XGBoost)은 이미 CatBoost/LightGBM과 겹치는 정보였을 가능성이 크고, 정규화 없는 순수 로지스틱은 오히려 Ridge/Lasso의 정규화가 노이즈를 걸러주는 역할을 했었다는 뜻일 수 있다. MLP는 완전히 다른 함수 형태인데도 신호가 없었다 — 최적화가 덜 되었거나(early_stopping/hidden size 미세조정 부족) 이 타겟 자체가 신경망이 잡을 만한 비선형 구조가 아닐 수 있다.
+
+**결론**: 무작정 알고리즘을 늘린다고 다 통하는 게 아니다 — E033에서 성공한 Ridge/Lasso(정규화된 선형모델)만의 특별한 지점이 있었던 것으로 보인다. 계속 다른 축(Trackman을 hazard 입력으로, LSTM)으로 탐색.

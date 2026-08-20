@@ -1,0 +1,25 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  캐싱: champion 메타피처(CatBoost hazard6 + joint4 + Lasso3)...
+  champion(v14, 메타피처 13개): 816.57  (기준)
+  캐싱: XGBoost/순수로지스틱/MLP hazard...
+
+  조합 스윕:
+    [+XGBoost hazard] 813.35  차이=-3.22  z=-0.96
+    [+순수 로지스틱 hazard] 809.94  차이=-6.63  z=-1.91
+    [+MLP hazard] 810.85  차이=-5.73  z=-1.63
+
+===== STRESS: <2023 -> 2023 =====
+  캐싱: champion 메타피처(CatBoost hazard6 + joint4 + Lasso3)...
+  champion(v14, 메타피처 13개): 859.01  (기준)
+  캐싱: XGBoost/순수로지스틱/MLP hazard...
+
+  조합 스윕:
+    [+XGBoost hazard] 850.20  차이=-8.81  z=-1.78
+    [+순수 로지스틱 hazard] 854.36  차이=-4.65  z=-0.96
+    [+MLP hazard] 859.35  차이=+0.33  z=0.07
+
+===== 요약 =====
+  [+XGBoost] PRIMARY 813.35(z=-0.96)  STRESS 850.20(z=-1.78)
+  [+순수 로지스틱] PRIMARY 809.94(z=-1.91)  STRESS 854.36(z=-0.96)
+  [+MLP] PRIMARY 810.85(z=-1.63)  STRESS 859.35(z=0.07)
