@@ -13,3 +13,7 @@ data/trackman_history.csv
 
 # 대용량 모델 아티팩트 (중단된 V14 계열 실험용, 재현 필요하면 build_artifacts.py/train.py 재실행)
 **/*.joblib
+
+# 실제 제출 코드/모델(model/, submit.zip)은 비공개 저장소로 이관됨
+# (github.com/ihabeu/lg-aimers-9th-kbo-submissions) -- 로컬엔 별도 git으로 클론돼있음
+모델링/submit/
