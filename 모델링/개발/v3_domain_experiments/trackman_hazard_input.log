@@ -1,0 +1,18 @@
+전체 train 투수 792명 중 신뢰 매핑 332명 (41.9%), many-to-one 충돌 제거 30건
+Trackman 커버리지: 68.4%
+
+===== PRIMARY: <2024 -> 2024 =====
+  캐싱: champion 메타피처(CatBoost hazard6 + joint4 + Lasso3)...
+  champion(v14, 메타피처 13개): 806.37  (기준)
+  Trackman 12개를 hazard 서브모델 입력에 추가해서 재학습...
+  +Trackman hazard: 808.19  차이=+1.83  z=0.40
+
+===== STRESS: <2023 -> 2023 =====
+  캐싱: champion 메타피처(CatBoost hazard6 + joint4 + Lasso3)...
+  champion(v14, 메타피처 13개): 846.30  (기준)
+  Trackman 12개를 hazard 서브모델 입력에 추가해서 재학습...
+  +Trackman hazard: 852.50  차이=+6.20  z=1.09
+
+===== 요약 =====
+PRIMARY: champion 806.37 -> +Trackman hazard 808.19 (z=0.40)
+STRESS:  champion 846.30 -> +Trackman hazard 852.50 (z=1.09)
