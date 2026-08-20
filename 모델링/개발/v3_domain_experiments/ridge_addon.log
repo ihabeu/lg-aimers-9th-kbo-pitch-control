@@ -1,0 +1,16 @@
+
+===== PRIMARY: <2024 -> 2024 =====
+  캐싱: champion 메타피처(CatBoost hazard6 + joint4 + Lasso3)...
+  champion(v14, 메타피처 13개): 816.23  (기준)
+  Ridge hazard 추가...
+  +Ridge hazard: 809.40  차이=-6.83  z=-1.82
+
+===== STRESS: <2023 -> 2023 =====
+  캐싱: champion 메타피처(CatBoost hazard6 + joint4 + Lasso3)...
+  champion(v14, 메타피처 13개): 858.42  (기준)
+  Ridge hazard 추가...
+  +Ridge hazard: 853.28  차이=-5.14  z=-0.93
+
+===== 요약 =====
+PRIMARY: champion 816.23 -> +Ridge hazard 809.40 (z=-1.82)
+STRESS:  champion 858.42 -> +Ridge hazard 853.28 (z=-0.93)
