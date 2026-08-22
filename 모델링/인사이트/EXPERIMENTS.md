@@ -540,61 +540,8 @@ E033에서 Ridge 단독은 STRESS z=1.82로 Lasso(z=2.15) 다음으로 근접한
 
 **명확히 기각(양쪽 다 음수, PRIMARY는 유의하게 나쁨).** Ridge와 Lasso는 같은 피처에 대한 L2/L1 로지스틱이라 서로 정보가 크게 겹친다 — Lasso가 이미 그 정보를 corrector에 준 상태에서 Ridge를 더하면 새 정보가 아니라 중복 노이즈만 된다. **결론: 정규화된 선형모델 hazard는 "하나만" 넣는 게 최선이고(Lasso), 여러 개를 동시에 넣는 건 오히려 해롭다.**
 
-## E038 (2026-08-20) — 공식 병합된 팀원 pipeline의 key조합(N322류)을 EB 3단 backoff로 독립 재구현, corrector 메타피처로 추가 (`개발/v3_domain_experiments/segment_corrector_eb_lookup_meta.py`) — pressure_backoff 채택, 나머지 2개 기각
 
-공식 팀 병합 확인 후, 팀원 pipeline의 재구성 가능한 lookup 컴포넌트 중 코드/train.csv가 없어도 "적용 공식과 alpha/k/beta 값"만으로 우리 자체 train.csv에서 다시 만들 수 있는 것만 골라 독립 재구현(함수/피처 이름은 원본과 겹치지 않게 새로 지음; bin edge/effect table이 원본 joblib에만 있는 P1120-M27/P1130은 재구성 불가로 제외). champion(v14, 메타피처 13개) 위에 3개를 개별로 추가 테스트:
+## E038부터
 
-- `pitcher_count_hand`: (pitcher_id, balls_before, strikes_before, batter_hand) EB(alpha=100)
-- `pressure_backoff`: 3단 계층 크로스 백오프 — L1=(pitcher_id,pressure,batter_hand) k1=50 / L2=(pitcher_id,batter_hand) k2=200 / L3=(pitcher_hand,pressure,batter_hand) k3=1000, `parent_prior=(w2*d2+w3*d3)/(w2+w3)`, `correction=(1-w1)*parent_prior`
-- `anchor_count_pressure`: R_ANCHOR(team13) only, 정확 balls-strikes 카운트, EB(k=200), ±0.01 클리핑
-
-리크 방지: 초기 구현이 `train_df`의 마지막 시즌을 뺀 나머지로 학습해 `train_df` 전체에 예측(부분 겹침=리크)하던 버그를 champion 자체의 residual-source 패턴(마지막 시즌만 target, 그 이전 전부 source)과 동일하게 맞춰 수정.
-
-| | champion(v14, 메타피처 13개) | +pitcher_count_hand | +pressure_backoff | +anchor_count_pressure |
-|---|---:|---:|---:|---:|
-| PRIMARY | 815.66 | 816.88 (z=0.34) | **827.40 (z=2.41)** | 813.46 (z=-0.60) |
-| STRESS | 857.99 | 855.94 (z=-0.36) | **867.99 (z=1.73)** | 850.82 (z=-1.42) |
-
-**`pressure_backoff` 채택.** E029와 같은 승리 프로필 — PRIMARY가 유의 기준(z≈1.96)을 실제로 넘었고(z=2.41), STRESS는 근접(z=1.73)에 같은 방향. `pitcher_count_hand`/`anchor_count_pressure`는 두 폴드 다 유의하지 않거나(전자) 음의 방향(후자)이라 기각. 팀원 pipeline이 R_CORE/R_ANCHOR를 별도 축으로 다루는 것과 달리 우리는 pressure×hand 크로스 백오프 하나로 뭉쳐서도 신호가 잡힌다는 뜻 — 다음 제출 후보(v15)로 패키징 대기.
-
-이 세션 진행 중 리소스 경합(사용자의 별도 Jupyter 작업)으로 두 번 중단/재시작됐으나 로직 자체엔 문제 없었고, 부하가 낮아진 뒤 재실행에서 위 수치로 최종 확정.
-
-## E039 (2026-08-21) — hazard 서브모델을 트리 계열 3종(ExtraTrees/RandomForest/HistGradientBoosting)으로 확장 (`개발/v3_domain_experiments/segment_corrector_tree_diversity_check.py`) — 셋 다 기각
-
-E033(LightGBM/Ridge/Lasso)/E034(XGBoost/순수로지스틱/MLP)에 이어 아직 안 써본 트리 계열 3종을 hazard 서브모델로 시도. 폴드 이름을 이번부터 PRIMARY/STRESS 대신 검증 대상 연도로 직접 부르고(`2024est`/`2023est`, "est"=estimator), 2022est(2019~2021 학습→2022 검증)를 3번째 폴드로 추가.
-
-| | champion(v14, 메타피처 13개) | +ExtraTrees | +RandomForest | +HistGB |
-|---|---:|---:|---:|---:|
-| 2024est | 818.75 | 814.07 (z=-1.15) | 815.30 (z=-0.97) | 814.18 (z=-1.31) |
-| 2023est | 860.78 | 857.51 (z=-0.60) | 857.04 (z=-0.75) | 859.91 (z=-0.15) |
-| 2022est | 2453.88 | 2454.25 (z=0.09) | 2450.16 (z=-0.96) | 2455.20 (z=0.31) |
-
-다양성 진단(corr with CatBoost qR/qM/qO)은 0.64~0.96으로 E033/E034 때와 비슷한 수준이었지만, 세 폴드 어디에서도 유의한 양의 신호가 없다. **셋 다 기각.** E034(XGBoost/순수로지스틱/MLP 기각)에 이어 트리 계열 대체 알고리즘도 전부 실패 — 지금까지 유일하게 통한 건 Ridge/Lasso(정규화된 선형모델)뿐이라는 게 더 분명해졌다. **결론: R/M/O hazard 서브모델 다양성은 "정규화된 선형모델"이라는 특정 귀납적 편향에서만 나온다, 트리/신경망 계열은 알고리즘을 바꿔도 CatBoost와 겹치는 정보만 준다.**
-
-2022est는 champion 기준점 자체가 818/860과 전혀 다른 스케일(2453.88)로 나왔다 — 2019~2021(2년치)만으로 학습해서 `asof_*` 누적 피처가 얕고, 성공률(r) 자체가 다른 해와 달라 BSS 공식의 분모(r(1-r))가 작아지면서 절대값이 크게 부풀려진 것으로 추정. z검정(폴드 내부 상대비교)은 유효하지만, 절대 점수를 2024est/2023est와 직접 비교하면 안 됨 — 앞서 논의했던 "초기 폴드는 데이터가 얕다"는 우려가 실제로 관측된 사례.
-
-## E040 (2026-08-21) — 팀원 P997 "diversity stack" 구조를 독립 재구현해 corrector 메타피처로 (`개발/v3_domain_experiments/segment_corrector_diversity_stack_meta.py`) — 개별 성분은 약하지만 5개 전부 합치니 3폴드 전부 유의, 이 세션 최고 승리 패턴
-
-공식 병합된 팀원 pipeline의 P997("서로 다른 피처 부분집합 × 서로 다른 알고리즘으로 같은 잔차 타겟을 5번 따로 맞혀서 섞는" 구조)을 코드는 안 가져오고 구조만 참고해서 독립 재구현(대회 규정 §11). 원본은 D 성분이 LightGBM인데, E026("잘 튜닝한 LightGBM은 CatBoost와 residual corr 0.9996으로 거의 같은 실수")을 이미 확인했으므로 LightGBM 대신 **CatBoost(l2_leaf_reg=L2_LEAF_REG)**로 대체(사용자 지시). 나머지 4개(FAILURE/PITCHMIX/BASE_STATE=ExtraTrees, RFSTATE=RandomForest)는 팀원 구조 그대로, 피처 부분집합만 우리 44피처 이름으로 매핑. target은 팀원처럼 "도메인평균 대비 잔차"가 아니라 우리 corrector가 이미 쓰는 champion 잔차(base 예측 대비)를 그대로 사용 — 5개 성분을 corrector 메타피처 자리에 위치시킴(hazard/joint/lasso와 동급). 리크 방지를 위해 5개 성분은 train_df를 한 번 더 안쪽에서 쪼갠(inner-split, residual-source 패턴과 동일) 잔차로 학습.
-
-| | champion(v14, 13개) | +dstack_d | +dstack_failure | +dstack_pitchmix | +dstack_rfstate | +dstack_basestate | **+전부(5개)** |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| 2024est | 817.63 | 815.41(z=-0.62) | 824.25(z=1.20) | 816.36(z=-0.29) | 813.22(z=-1.32) | 809.23(z=-2.23) | **832.09(z=2.53)** |
-| 2023est | 857.17 | 848.58(z=-1.82) | 862.74(z=1.09) | 863.35(z=0.88) | 848.67(z=-1.76) | 872.27(z=2.54) | **883.61(z=3.29)** |
-| 2022est | 2454.62 | 2461.35(z=1.37) | 2462.91(z=1.24) | 2458.43(z=0.80) | 2450.76(z=-0.89) | 2457.92(z=0.76) | **2478.79(z=3.36)** |
-
-**개별 성분은 폴드마다 방향이 들쭉날쭉하다**(dstack_basestate만 봐도 2024est는 z=-2.23인데 2023est는 z=2.54로 정반대). 그런데 **5개를 전부 corrector에 동시에 넣으면 3개 폴드 전부, 그것도 전부 유의 기준(z≈1.96)을 넘겨서 개선**된다 — E029(PRIMARY 미달)/E030/E032/E033(항상 한쪽 폴드만 확실)보다도 깨끗한, 이 세션 유일의 "3폴드 전부 유의" 사례. 개별 성분이 노이즈에 가까워도 서로 다른 피처 부분집합×알고리즘 조합이 모이면 corrector(ExtraTrees)가 알아서 유용한 부분만 골라 쓰는 것으로 해석된다 — 팀원 pipeline이 이 구조를 굳이 5개나 쓰는 이유와 같은 맥락.
-
-**채택, v16으로 패키징 예정.**
-
-## E041 (2026-08-22) — pressure_backoff/diversity stack의 학습 타겟을 base 잔차에서 corrector 잔차로("진짜 캐스케이드") (`개발/v3_domain_experiments/segment_corrector_true_cascade.py`) — 폴드마다 결과 갈림, 보류
-
-사용자 요청: "base는 우리꺼 쓰고 2단 이후로 3단부터는 팀원의 논리대로" — 지금까지(E038/E040) pressure_backoff/diversity stack은 전부 **base 잔차**(residual1 = y - base_pred)를 목표로 학습해서 하나의 flat corrector에 메타피처로 욱여넣었다. 이번엔 이 둘의 학습 타겟을 **2단(hazard+joint+lasso corrector)이 설명하고 남긴 잔차**(residual2 = y - pred2)로 바꿔서, "이전 단의 잔차를 다음 단이 교정한다"는 팀원 pipeline의 캐스케이드 철학을 반영. leak-safety를 위해 table_target(train_df의 마지막 연도)에서 base+corrector 전체를 한 번 더(1년 더 이전 데이터로) 재현해서 그 잔차를 구함(재귀는 1단계로 한정). 최종 결합은 기존처럼 하나의 flat corrector(residual1 목표, cross-fit)로 유지 — 바뀐 건 pressure_backoff/dstack 서브모델이 "무엇을 맞히도록 학습됐는가"뿐.
-
-| | champion(2단) | 기존(서브모델이 residual1 목표, v15/v16) | 신규(서브모델이 residual2 목표, 캐스케이드) |
-|---|---:|---:|---:|
-| 2024est | 818.49 | 828.22 (z=1.48) | **851.88 (z=4.40)** |
-| 2023est | 857.86 | **893.28 (z=4.03)** | 892.03 (z=3.56) |
-| 2022est | 2454.42 | **2478.42 (z=2.76)** | 2466.06 (z=1.17) |
-
-**폴드마다 결과가 갈렸다.** 2024est에서는 캐스케이드가 기존보다 뚜렷하게 더 좋았지만(z 1.48→4.40), 2023est는 거의 동률(기존이 근소 우위), 2022est는 기존이 뚜렷하게 더 좋았다(캐스케이드가 오히려 손해). E040(3폴드 전부 유의)만큼 깨끗하지 않다. 추정 원인: 캐스케이드의 table_target 잔차 재현 과정 자체가 "table_source(그보다 1년 더 이전 데이터)로 학습한 base+corrector"에 의존하는데, 2022est 폴드는 table_source가 2019~2020(2년치)뿐이라 이 재귀 단계 자체가 얕은 데이터 위에서 이뤄져 노이즈가 컸을 가능성 — 2024est/2023est의 table_source(3~4년치)보다 훨씬 불안정. **결론(잠정)**: "이전 단 잔차를 목표로 재학습"하는 캐스케이드 방향 자체는 유망하지만(2024est 결과가 이 세션 최고 z값인 4.40), 재귀에 쓰이는 table_source 데이터가 충분히 두꺼울 때만 안정적으로 통하는 것으로 보임 — 데이터가 얕은 폴드에서는 오히려 해로울 수 있어 **보류(기각 아님)**. 사용자 지시로 이후 작업 일시 중단, 재개 시 여기부터 계속.
+공식 팀 병합으로 팀원 pipeline 코드를 공유받은 시점(2026-08-20)부터의 실험 로그는
+private 저장소(`lg-aimers-9th-kbo-private`)의 `모델링/인사이트/EXPERIMENTS.md`에 기록한다.
